@@ -1,0 +1,53 @@
+CORE INSIDES:
+	Categorization - Categorization namespace , 
+
+
+	Context - Application behaviour(how the program will work)
+
+
+	Fluent - Recipe and Menus factories
+
+
+	Ingredients - Ingredients logic
+
+
+	Linq - Useless design pattern
+
+
+	Menus - Some menu logic and some useless menu movement logic
+
+
+	Modeler - Profile of the user
+
+
+	NLP - NLP
+
+	
+	Profisioning - (DTO - Data transfering objects(packages)
+               Transfer data to DB
+
+
+
+	Recipes - Recipe Logic
+
+
+
+	ShoppingList - Shoping lit logic
+
+	OUT OF NAMESPACE CLASSES:
+
+	object properties, exceptions , extensions ,
+	basically things oriented at the program's objects
+
+
+DB INSIDES:
+	Models - models of the application's objects 
+	         for the database to store
+
+
+	NLP - Database nlp model
+
+
+
+	CLASSES OUT OF NAMESPACES : 
+	Necessities for the database(adapter,exporter etc.)
