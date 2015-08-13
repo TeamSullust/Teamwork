@@ -2,13 +2,16 @@
 
 namespace KitchenPC.Categorization
 {
-   public interface IRecipeClassification
-   {
-      Recipe Recipe { get; }
+    public interface IRecipeClassification
+    {
+        Recipe Recipe { get; }
 
-      bool IsBreakfast { get; }
-      bool IsLunch { get; }
-      bool IsDinner { get; }
-      bool IsDessert { get; }
-   }
+        bool IsBreakfast { get; }
+
+        bool IsLunch { get; }
+
+        bool IsDinner { get; }
+
+        bool IsDessert { get; }
+    }
 }

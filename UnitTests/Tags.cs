@@ -34,7 +34,7 @@ namespace KitchenPC.UnitTests
          RecipeTags tags4 = 15; //Same as tags1
          RecipeTags tags5 = null;
          RecipeTags tags6 = null;
-
+         //TODO TI SI GOLQM GEI BE
          //Test counts
          Assert.AreEqual(4, tags1.Length);
          Assert.AreEqual(2, tags2.Length);

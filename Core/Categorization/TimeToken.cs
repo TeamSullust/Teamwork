@@ -1,39 +1,54 @@
 namespace KitchenPC.Categorization
 {
-   internal class TimeToken : IToken
-   {
-      enum Classification
-      {
-         Quick,
-         Medium,
-         Long,
-         SuperLong
-      };
+    internal class TimeToken : IToken
+    {
+        private enum Classification
+        {
+            Quick,
 
-      readonly Classification classification;
+            Medium,
 
-      public TimeToken(int minutes)
-      {
-         if (minutes < 10) classification = Classification.Quick;
-         else if (minutes < 30) classification = Classification.Medium;
-         else if (minutes <= 60) classification = Classification.Long;
-         else classification = Classification.SuperLong;
-      }
+            Long,
 
-      public override bool Equals(object obj)
-      {
-         var t1 = obj as TimeToken;
-         return (t1 != null && t1.classification.Equals(classification));
-      }
+            SuperLong
+        };
 
-      public override int GetHashCode()
-      {
-         return classification.GetHashCode();
-      }
+        private readonly Classification classification;
 
-      public override string ToString()
-      {
-         return classification.ToString();
-      }
-   }
+        public TimeToken(int minutes)
+        {
+            if (minutes < 10)
+            {
+                classification = Classification.Quick;
+            }
+            else if (minutes < 30)
+            {
+                classification = Classification.Medium;
+            }
+            else if (minutes <= 60)
+            {
+                classification = Classification.Long;
+            }
+            else
+            {
+                classification = Classification.SuperLong;
+            }
+        }
+
+        public override bool Equals(object obj)
+        {
+            var comparedToken = obj as TimeToken;
+            return comparedToken != null && comparedToken.classification.Equals(classification);
+        }
+
+        public override int GetHashCode()
+        {
+            return classification.GetHashCode();
+        }
+
+        public override string ToString()
+        {
+            return classification.ToString();
+        }
+    }
 }

@@ -76,7 +76,7 @@ namespace KitchenPC.UnitTests
          Trace.WriteLine("Running NormalModel Test (Recommended)");
          var ratedSet = session.Generate(5, 5); //Test for recipes user most likely to rate highly (basically get suggestions, ignore pantry)
          Assert.AreEqual(5, ratedSet.RecipeIds.Length);
-
+         
          // - Test profile with specific AllowedTags, and AllowedTags == null
       }
    }

@@ -13,7 +13,9 @@ namespace KitchenPC.Categorization
       static IEnumerable<IToken> ParseText(string text)
       {
          var parts = Regex.Split(text, @"[^a-z0-9\'\$\-]", RegexOptions.IgnoreCase);
-         return (from p in parts where valid.IsMatch(p) select new TextToken(p) as IToken);
+         return from p in parts 
+                where valid.IsMatch(p) 
+                select new TextToken(p) as IToken;
       }
 
       public static IEnumerable<IToken> Tokenize(Recipe recipe)
