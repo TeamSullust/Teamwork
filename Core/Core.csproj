@@ -210,7 +210,7 @@
     <Compile Include="NLP\SynonymTree.cs" />
     <Compile Include="NLP\Template.cs" />
     <Compile Include="NLP\TemplateStatistics.cs" />
-    <Compile Include="NLP\Tokens\AmtToken.cs" />
+    <Compile Include="NLP\Tokens\AmountToken.cs" />
     <Compile Include="NLP\Tokens\AnomToken.cs" />
     <Compile Include="NLP\Tokens\FormToken.cs" />
     <Compile Include="NLP\Tokens\IngToken.cs" />

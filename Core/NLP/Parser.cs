@@ -19,8 +19,10 @@ namespace KitchenPC.NLP
 
       static void ReplaceAccents(ref string input)
       {
-         if (String.IsNullOrEmpty(input))
-            return;
+          if (String.IsNullOrEmpty(input))
+          {
+              return;              
+          }
 
          input = Regex.Replace(input, @"[\xC0-\xC5\xE0-\xE5]", "a"); //Replace with "a"
          input = Regex.Replace(input, @"[\xC8-\xCB\xE8-\xEB]", "e"); //Replace with "e"
@@ -36,11 +38,11 @@ namespace KitchenPC.NLP
          this.templates = new List<Template>(templates.Length);
          Stats = new TemplateStatistics();
 
-         foreach (var t in templates)
+         foreach (var template in templates)
          {
-            NlpTracer.Trace(TraceLevel.Debug, "Loaded Template: {0}", t);
-            this.templates.Add(t);
-            Stats.RecordTemplate(t);
+            NlpTracer.Trace(TraceLevel.Debug, "Loaded Template: {0}", template);
+            this.templates.Add(template);
+            Stats.RecordTemplate(template);
          }
       }
 
@@ -56,12 +58,12 @@ namespace KitchenPC.NLP
 
          //Loop through all loaded templates looking for a match - return that match, or return null if unknown
          var bestResult = MatchResult.NoMatch;
-         foreach (var t in templates)
+         foreach (var template in templates)
          {
-            var result = t.Parse(normalizedInput);
+            var result = template.Parse(normalizedInput);
             if (result is Match)
             {
-               Stats[t]++;
+               Stats[template]++;
                return result;
             }
             else

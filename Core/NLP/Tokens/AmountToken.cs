@@ -4,7 +4,7 @@ using System.Text.RegularExpressions;
 
 namespace KitchenPC.NLP.Tokens
 {
-   public class AmtToken : IGrammar
+   public class AmountToken : IGrammar
    {
       /// <summary>
       /// Reads stream to match it against an amount, number or indefinite article.  Sets any parsed value to usage.Amount
@@ -15,23 +15,23 @@ namespace KitchenPC.NLP.Tokens
       public bool Read(Stream stream, MatchData matchdata)
       {
          //We probably have to detect a potential numeric match up front and then parsewith Validate, otherwise scan till first space and check if it's a number (do we support numbers with spaces?)
-         var matchPos = stream.Position;
-         var origPos = matchPos;
-         int curByte;
+         var matchPosition = stream.Position;
+         var originalPosition = matchPosition;
+         int currentByte;
 
          matchdata.Amount = null;
          var curBuffer = String.Empty;
          var invalidNumeric = new Regex(@"[^0-9 /.-]");
 
-         while ((curByte = stream.ReadByte()) >= 0)
+         while ((currentByte = stream.ReadByte()) >= 0)
          {
             float parsedAmtHigh;
             float? parsedAmtLow;
 
-            curBuffer += (char) curByte;
+            curBuffer += (char) currentByte;
             if (Validate(curBuffer, out parsedAmtLow, out parsedAmtHigh)) //Try to parse buffer as a valid number or fraction
             {
-               matchPos = stream.Position;
+               matchPosition = stream.Position;
                matchdata.Amount = new Amount();
                matchdata.Amount.SizeLow = parsedAmtLow;
                matchdata.Amount.SizeHigh = parsedAmtHigh;
@@ -41,11 +41,11 @@ namespace KitchenPC.NLP.Tokens
                if (invalidNumeric.IsMatch(curBuffer)) //Buffer has something in it other than 0-9 /.
                {
                   //Hold on, let's try parsing this buffer using the NumericToken parser
-                  stream.Seek(origPos, SeekOrigin.Begin);
+                  stream.Seek(originalPosition, SeekOrigin.Begin);
                   var numericParser = new NumericToken();
                   if (numericParser.Read(stream, matchdata))
                   {
-                     matchPos = stream.Position;
+                     matchPosition = stream.Position;
                   }
 
                   break;
@@ -53,7 +53,7 @@ namespace KitchenPC.NLP.Tokens
             }
          }
 
-         stream.Seek(matchPos, SeekOrigin.Begin);
+         stream.Seek(matchPosition, SeekOrigin.Begin);
          return (matchdata.Amount != null); //We found a valid amount here
       }
 

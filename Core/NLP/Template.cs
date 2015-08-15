@@ -75,7 +75,7 @@ namespace KitchenPC.NLP
          switch (tokenName)
          {
             case "[AMT]":
-               return new AmtToken();
+               return new AmountToken();
             case "[UNIT]":
                return new UnitToken();
             case "[ING]":

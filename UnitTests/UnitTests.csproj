@@ -119,7 +119,7 @@
     <Compile Include="Mock\MockNoRatingsUserProfile.cs" />
     <Compile Include="Mock\MockNormalUserProfile.cs" />
     <Compile Include="Mock\Recipes.cs" />
-    <Compile Include="NLP.cs" />
+    <Compile Include="NlpTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Tags.cs" />
     <Compile Include="TestFormLoader.cs" />
