@@ -2,11 +2,12 @@
 
 namespace KitchenPC.Menus
 {
-   public class MenuResult
-   {
-      public bool MenuCreated;
-      public bool MenuUpdated;
+    public class MenuResult
+    {
+        public bool IsMenuCreated;
 
-      public Guid? NewMenuId;
-   }
+        public bool IsMenuUpdated;
+
+        public Guid? NewMenuId;
+    }
 }

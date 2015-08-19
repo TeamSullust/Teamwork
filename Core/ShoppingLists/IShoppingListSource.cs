@@ -1,7 +1,7 @@
 ﻿namespace KitchenPC.ShoppingLists
 {
-   public interface IShoppingListSource
-   {
-      ShoppingListItem GetItem();
-   }
+    public interface IShoppingListSource
+    {
+        ShoppingListItem GetItem();
+    }
 }

@@ -3,72 +3,113 @@ using KitchenPC.Recipes;
 
 namespace KitchenPC.Menus
 {
-   public struct Menu
-   {
-      public Guid? Id;
-      public String Title;
-      public RecipeBrief[] Recipes; //Can be null
+    public struct Menu
+    {
+        private Guid? id;
 
-      public static Menu FromId(Guid menuId)
-      {
-         return new Menu(menuId, null);
-      }
+        private String title;
 
-      static readonly Menu favorites = new Menu(null, "Favorites");
+        private RecipeBrief[] recipes; //Can be null
 
-      public static Menu Favorites
-      {
-         get
-         {
-            return favorites;
-         }
-      }
+        public static Menu FromId(Guid menuId)
+        {
+            return new Menu(menuId, null);
+        }
 
-      public Menu(Guid? id, String title)
-      {
-         Id = id;
-         Title = title;
-         Recipes = null;
-      }
+        private static readonly Menu favorites = new Menu(null, "Favorites");
 
-      public Menu(Menu menu)
-      {
-         Id = menu.Id;
-         Title = menu.Title;
-         Recipes = null;
+        public static Menu Favorites
+        {
+            get
+            {
+                return favorites;
+            }
+        }
 
-         if (menu.Recipes != null)
-         {
-            Recipes = new RecipeBrief[menu.Recipes.Length];
-            menu.Recipes.CopyTo(Recipes, 0);
-         }
-      }
+        public Menu(Guid? id, string title)
+        {
+            this.id = id;
+            this.title = title;
+            recipes = null;
+        }
 
-      public override string ToString()
-      {
-         var count = (Recipes != null ? Recipes.Length : 0);
+        public Menu(Menu menu)
+        {
+            id = menu.Id;
+            title = menu.Title;
+            recipes = null;
 
-         return String.Format("{0} ({1} {2}",
-            Title,
-            count,
-            count != 1 ? "recipes" : "recipe");
-      }
+            if (menu.Recipes == null)
+            {
+                return;
+            }
+            this.Recipes = new RecipeBrief[menu.Recipes.Length];
+            menu.Recipes.CopyTo(this.Recipes, 0);
+        }
 
-      public override bool Equals(object obj)
-      {
-         if (false == (obj is Menu))
-            return false;
+        public Guid? Id
+        {
+            get
+            {
+                return this.id;
+            }
 
-         var menu = (Menu) obj;
-         if (this.Id.HasValue || menu.Id.HasValue)
-            return this.Id.Equals(menu.Id);
+            set
+            {
+                this.id = value;
+            }
+        }
 
-         return this.Title.Equals(menu.Title);
-      }
+        public String Title
+        {
+            get
+            {
+                return this.title;
+            }
+            set
+            {
+                this.title = value;
+            }
+        }
 
-      public override int GetHashCode()
-      {
-         return this.Id.HasValue ? this.Id.Value.GetHashCode() : this.Title.GetHashCode();
-      }
-   }
+        public RecipeBrief[] Recipes
+        {
+            get
+            {
+                return this.recipes;
+            }
+            set
+            {
+                this.recipes = value;
+            }
+        }
+
+        public override string ToString()
+        {
+            var count = (Recipes != null ? Recipes.Length : 0);
+            var result = string.Format("{0} ({1} {2}", Title, count, count != 1 ? "recipes" : "recipe");
+            return result;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (false == (obj is Menu))
+            {
+                return false;
+            }
+
+            var menu = (Menu)obj;
+            if (this.Id.HasValue || menu.Id.HasValue)
+            {
+                return this.Id.Equals(menu.Id);
+            }
+
+            return this.Title.Equals(menu.Title);
+        }
+
+        public override int GetHashCode()
+        {
+            return this.Id.HasValue ? this.Id.Value.GetHashCode() : this.Title.GetHashCode();
+        }
+    }
 }

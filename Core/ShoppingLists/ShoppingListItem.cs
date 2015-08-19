@@ -4,79 +4,96 @@ using KitchenPC.Recipes;
 
 namespace KitchenPC.ShoppingLists
 {
-   public class ShoppingListItem : IngredientAggregation
-   {
-      public string Raw { get; set; }
-      public Guid? Id { get; set; }
-      public RecipeBrief Recipe { get; set; }
-      public bool CrossedOut { get; set; }
+    public class ShoppingListItem : IngredientAggregation
+    {
+        public string Raw { get; set; }
 
-      public static ShoppingListItem FromId(Guid id)
-      {
-         return new ShoppingListItem(id);
-      }
+        public Guid? Id { get; set; }
 
-      public ShoppingListItem(Guid id) : base(null)
-      {
-         Id = id;
-      }
+        public RecipeBrief Recipe { get; set; }
 
-      public ShoppingListItem(string raw) : base(null)
-      {
-         if (String.IsNullOrWhiteSpace(raw))
-            throw new ArgumentException("Shopping list item cannot be blank.");
+        public bool CrossedOut { get; set; }
 
-         Raw = raw;
-      }
+        public static ShoppingListItem FromId(Guid id)
+        {
+            return new ShoppingListItem(id);
+        }
 
-      public ShoppingListItem(Ingredient ingredient) : base(ingredient)
-      {
-      }
+        public ShoppingListItem(Guid id)
+            : base(null)
+        {
+            this.Id = id;
+        }
 
-      public override IngredientAggregation AddUsage(IngredientUsage usage)
-      {
-         if (Ingredient == null)
-            throw new ArgumentException("Cannot add usage to a non-resolved shopping list item.  Create a new shopping list based on an IngredientUsage.");
+        public ShoppingListItem(string raw)
+            : base(null)
+        {
+            if (string.IsNullOrWhiteSpace(raw))
+            {
+                throw new ArgumentException("Shopping list item cannot be blank.");
+            }
 
-         return base.AddUsage(usage);
-      }
+            Raw = raw;
+        }
 
-      public override ShoppingListItem GetItem()
-      {
-         return this;
-      }
+        public ShoppingListItem(Ingredient ingredient)
+            : base(ingredient)
+        {
+        }
 
-      public override string ToString()
-      {
-         return (!String.IsNullOrEmpty(Raw) ? Raw : base.ToString());
-      }
+        public override IngredientAggregation AddUsage(IngredientUsage usage)
+        {
+            if (Ingredient == null)
+            {
+                throw new ArgumentException(
+                    "Cannot add usage to a non-resolved shopping list item. Create a new shopping list based on an IngredientUsage.");
+            }
 
-      public static implicit operator ShoppingListItem(string s)
-      {
-         return new ShoppingListItem(s);
-      }
+            return base.AddUsage(usage);
+        }
 
-      public static implicit operator String(ShoppingListItem i)
-      {
-         return i.ToString();
-      }
+        public override ShoppingListItem GetItem()
+        {
+            return this;
+        }
 
-      public override bool Equals(object obj)
-      {
-         var item = obj as ShoppingListItem;
-         if (item == null)
-            return false;
+        public override string ToString()
+        {
+            return !string.IsNullOrEmpty(Raw) ? Raw : base.ToString();
+        }
 
-         if (this.Ingredient != null && item.Ingredient != null) // If they both represent an ingredient, compare by ingredient
-            return this.Ingredient.Equals(item.Ingredient);
+        public static implicit operator ShoppingListItem(string item)
+        {
+            return new ShoppingListItem(item);
+        }
 
-         // Compare by Raw string
-         return String.Equals(this.Raw, item.Raw, StringComparison.InvariantCulture);
-      }
+        public static implicit operator String(ShoppingListItem itemToString)
+        {
+            return itemToString.ToString();
+        }
 
-      public override int GetHashCode()
-      {
-         return Ingredient != null ? Ingredient.Id.GetHashCode() : Raw.GetHashCode();
-      }
-   }
+        public override bool Equals(object obj)
+        {
+            var item = obj as ShoppingListItem;
+
+            if (item == null)
+            {
+                return false;
+            }
+
+            if (this.Ingredient != null && item.Ingredient != null)
+            {
+                // If they both represent an ingredient, compare by ingredient
+                return this.Ingredient.Equals(item.Ingredient);
+            }
+
+            // Compare by Raw string
+            return string.Equals(this.Raw, item.Raw, StringComparison.InvariantCulture);
+        }
+
+        public override int GetHashCode()
+        {
+            return this.Ingredient != null ? this.Ingredient.Id.GetHashCode() : Raw.GetHashCode();
+        }
+    }
 }

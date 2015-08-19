@@ -2,9 +2,10 @@
 
 namespace KitchenPC.ShoppingLists
 {
-   public class ShoppingListResult
-   {
-      public Guid? NewShoppingListId;
-      public ShoppingList List;
-   }
+    public class ShoppingListResult
+    {
+        public Guid? NewShoppingListId;
+
+        public ShoppingList List;
+    }
 }
