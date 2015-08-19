@@ -5,7 +5,9 @@ using KitchenPC.UnitTests;
 
 namespace KPCServer.UnitTests
 {
-   /// <summary>Mock UserProfile object for pantry ingredient that matches no recipes.</summary>
+    using KitchenPC.Recipes.Enums;
+
+    /// <summary>Mock UserProfile object for pantry ingredient that matches no recipes.</summary>
    internal class MockImpossiblePantryUserProfile : IUserProfile
    {
       readonly RecipeRating[] ratings;
@@ -24,8 +26,8 @@ namespace KPCServer.UnitTests
 
          pantry = new PantryItem[]
          {
-            new PantryItem() {IngredientId = ModelerTests.ING_CHINESECHESTNUTS, Amt = 5}, //Chinese chestnuts, no recipes
-            new PantryItem() {IngredientId = ModelerTests.ING_GREENTURTLE, Amt = 16} //Green Turtle, no recipes
+            new PantryItem() {IngredientId = ModelerTests.ingChineseChestnuts, Amt = 5}, //Chinese chestnuts, no recipes
+            new PantryItem() {IngredientId = ModelerTests.ingGreenTurtle, Amt = 16} //Green Turtle, no recipes
          };
       }
 
@@ -65,7 +67,7 @@ namespace KPCServer.UnitTests
       {
          get
          {
-            return 0;
+            return new RecipeTags();
          }
       } //Engine will tend to favor recipes with these tags
 
@@ -81,7 +83,7 @@ namespace KPCServer.UnitTests
       {
          get
          {
-            return new Guid[] {ModelerTests.ING_MILK};
+            return new Guid[] {ModelerTests.ingMilk};
          }
       } //Engine will never suggest any recipe with these ingredients, no matter what.
 
@@ -89,7 +91,7 @@ namespace KPCServer.UnitTests
       {
          get
          {
-            return (RecipeTag.Breakfast | RecipeTag.Dessert | RecipeTag.Dinner | RecipeTag.Lunch | RecipeTag.NoMeat);
+            return new RecipeTags(RecipeTag.Breakfast,RecipeTag.Dessert,RecipeTag.Dinner,RecipeTag.Lunch,RecipeTag.NoMeat);
          }
       }
    }

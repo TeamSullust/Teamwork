@@ -11,7 +11,11 @@ using IngredientUsage = KitchenPC.Ingredients.IngredientUsage;
 
 namespace KitchenPC.Context
 {
-   /// <summary>Implements a KitchenPC Context which is used to interact with the KitchenPC engine, as well as persist data.</summary>
+    using KitchenPC.Fluent;
+    using KitchenPC.Fluent.RecipeHandlers;
+    using KitchenPC.Recipes.Enums;
+
+    /// <summary>Implements a KitchenPC Context which is used to interact with the KitchenPC engine, as well as persist data.</summary>
    public interface IKPCContext
    {
       void Initialize();

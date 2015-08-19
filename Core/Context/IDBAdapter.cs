@@ -12,7 +12,9 @@ using KitchenPC.ShoppingLists;
 
 namespace KitchenPC.Context
 {
-   public interface IDBAdapter : IProvisionSource, IProvisionTarget
+    using KitchenPC.Recipes.Enums;
+
+    public interface IDBAdapter : IProvisionSource, IProvisionTarget
    {
       void Initialize(IKPCContext context);
       IEnumerable<IngredientSource> LoadIngredientsForIndex();

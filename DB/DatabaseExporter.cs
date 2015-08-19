@@ -10,7 +10,11 @@ using NHibernate.Persister.Entity;
 
 namespace KitchenPC.DB.Provisioning
 {
-   public class DatabaseExporter : IDisposable, IProvisioner
+    using Menus = KitchenPC.Data.DTO.Menus;
+    using Recipes = KitchenPC.Data.DTO.Recipes;
+    using ShoppingLists = KitchenPC.Data.DTO.ShoppingLists;
+
+    public class DatabaseExporter : IDisposable, IProvisioner
    {
       readonly IStatelessSession session;
       public static ILog Log = LogManager.GetLogger(typeof (DatabaseExporter));
@@ -184,15 +188,15 @@ namespace KitchenPC.DB.Provisioning
          return list;
       }
 
-      public List<Data.DTO.Recipes> Recipes()
+      public List<Recipes> Recipes()
       {
-         var list = ImportTableData<Models.Recipes, Data.DTO.Recipes>(r => new Data.DTO.Recipes
+         var list = ImportTableData<Models.Recipes, Recipes>(r => new Data.DTO.Recipes
          {
-            RecipeId = (Guid) r["RecipeId"],
-            CookTime = r["CookTime"] as Int16?,
+            RecipeId = (Guid)r["RecipeId"],
+            CookTime = Convert.ToInt16(r["CookTime"]),
             Steps = r["Steps"] as String,
-            PrepTime = r["PrepTime"] as Int16?,
-            Rating = (Int16) r["Rating"],
+            PrepTime = Convert.ToInt16(r["PrepTime"]),
+            Rating = (short) r["Rating"],
             Description = r["Description"] as String,
             Title = r["Title"] as String,
             Hidden = (bool) r["Hidden"],
@@ -280,9 +284,9 @@ namespace KitchenPC.DB.Provisioning
          return list;
       }
 
-      public List<Data.DTO.Menus> Menus()
+      public List<Menus> Menus()
       {
-         var list = ImportTableData<Models.Menus, Data.DTO.Menus>(r => new Data.DTO.Menus
+         var list = ImportTableData<Models.Menus, Menus>(r => new Data.DTO.Menus
          {
             MenuId = (Guid) r["MenuId"],
             UserId = (Guid) r["UserId"],
@@ -322,9 +326,9 @@ namespace KitchenPC.DB.Provisioning
          return list;
       }
 
-      public List<Data.DTO.ShoppingLists> ShoppingLists()
+      public List<ShoppingLists> ShoppingLists()
       {
-         var list = ImportTableData<Models.ShoppingLists, Data.DTO.ShoppingLists>(r => new Data.DTO.ShoppingLists
+         var list = ImportTableData<Models.ShoppingLists, ShoppingLists>(r => new Data.DTO.ShoppingLists
          {
             ShoppingListId = (Guid) r["ShoppingListId"],
             UserId = (Guid) r["UserId"],

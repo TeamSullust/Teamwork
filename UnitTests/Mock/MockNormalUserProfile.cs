@@ -5,7 +5,9 @@ using KitchenPC.UnitTests;
 
 namespace KPCServer.UnitTests
 {
-   /// <summary>Mock UserProfile object for test modeling</summary>
+    using KitchenPC.Recipes.Enums;
+
+    /// <summary>Mock UserProfile object for test modeling</summary>
    internal class MockNormalUserProfile : IUserProfile
    {
       readonly RecipeRating[] ratings;
@@ -24,11 +26,11 @@ namespace KPCServer.UnitTests
 
          pantry = new PantryItem[]
          {
-            new PantryItem() {IngredientId = ModelerTests.ING_EGGS, Amt = 6}, //6 eggs
-            new PantryItem() {IngredientId = ModelerTests.ING_MILK, Amt = 16}, //16 cups of milk (1 gallon)
-            new PantryItem() {IngredientId = ModelerTests.ING_FLOUR, Amt = 8}, //8oz flour
-            new PantryItem() {IngredientId = ModelerTests.ING_CHEESE, Amt = 16}, //16oz cheese
-            new PantryItem() {IngredientId = ModelerTests.ING_CHICKEN, Amt = 16} //16oz chicken
+            new PantryItem() {IngredientId = ModelerTests.ingEggs, Amt = 6}, //6 eggs
+            new PantryItem() {IngredientId = ModelerTests.ingMilk, Amt = 16}, //16 cups of milk (1 gallon)
+            new PantryItem() {IngredientId = ModelerTests.ingFlour, Amt = 8}, //8oz flour
+            new PantryItem() {IngredientId = ModelerTests.ingCheese, Amt = 16}, //16oz cheese
+            new PantryItem() {IngredientId = ModelerTests.ingChicken, Amt = 16} //16oz chicken
          };
       }
 
@@ -60,7 +62,7 @@ namespace KPCServer.UnitTests
       {
          get
          {
-            return new Guid[] {ModelerTests.ING_CHICKEN, ModelerTests.ING_CHEESE};
+            return new Guid[] {ModelerTests.ingChicken, ModelerTests.ingCheese};
          }
       } //Engine will tend to favor recipes with these ingredients
 
@@ -68,7 +70,7 @@ namespace KPCServer.UnitTests
       {
          get
          {
-            return RecipeTag.Dinner | RecipeTag.Easy;
+            return new RecipeTags(RecipeTag.Dinner, RecipeTag.EasyToMake);
          }
       } //Engine will tend to favor recipes with these tags
 
@@ -84,7 +86,7 @@ namespace KPCServer.UnitTests
       {
          get
          {
-            return new Guid[] {ModelerTests.ING_MILK};
+            return new Guid[] {ModelerTests.ingMilk};
          }
       } //Engine will never suggest any recipe with these ingredients, no matter what.
 
@@ -92,7 +94,7 @@ namespace KPCServer.UnitTests
       {
          get
          {
-            return (RecipeTag.Dinner | RecipeTag.Dessert | RecipeTag.NoMeat);
+            return new RecipeTags(RecipeTag.Dinner,RecipeTag.Dessert,RecipeTag.NoMeat);
          }
       }
    }

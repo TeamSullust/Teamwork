@@ -6,9 +6,9 @@ namespace KitchenPC.Data.DTO
    public class Recipes
    {
       public Guid RecipeId { get; set; }
-      public short? CookTime { get; set; }
+      public short CookTime { get; set; }
       public string Steps { get; set; }
-      public short? PrepTime { get; set; }
+      public short PrepTime { get; set; }
       public short Rating { get; set; }
       public string Description { get; set; }
       public string Title { get; set; }

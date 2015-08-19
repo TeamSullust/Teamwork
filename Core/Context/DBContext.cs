@@ -15,7 +15,11 @@ using IngredientUsage = KitchenPC.Ingredients.IngredientUsage;
 
 namespace KitchenPC.Context
 {
-   /// <summary>A KitchenPC Context that loads and saves data through a configured database adapter.</summary>
+    using KitchenPC.Fluent;
+    using KitchenPC.Fluent.RecipeHandlers;
+    using KitchenPC.Recipes.Enums;
+
+    /// <summary>A KitchenPC Context that loads and saves data through a configured database adapter.</summary>
    public class DBContext : IKPCContext, IProvisionSource, IProvisionTarget
    {
       static readonly ReaderWriterLockSlim InitLock = new ReaderWriterLockSlim();
@@ -295,8 +299,6 @@ namespace KitchenPC.Context
       /// <param name="recipe">Fully constructed Recipe object.</param>
       public RecipeResult CreateRecipe(Recipe recipe)
       {
-         Recipe.Validate(recipe);
-
          return Adapter.CreateRecipe(Identity, recipe);
       }
 

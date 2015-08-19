@@ -3,7 +3,9 @@ using KitchenPC.Recipes;
 
 namespace KitchenPC.Data.DTO
 {
-   public class RecipeMetadata
+    using KitchenPC.Recipes.Enums;
+
+    public class RecipeMetadata
    {
       public Guid RecipeMetadataId { get; set; }
       public Guid RecipeId { get; set; }
@@ -43,24 +45,94 @@ namespace KitchenPC.Data.DTO
 
       public static RecipeTags ToRecipeTags(RecipeMetadata metadata)
       {
-         return
-            (metadata.DietGlutenFree ? 1 << 0 : 0) +
-            (metadata.DietNoAnimals ? 1 << 1 : 0) +
-            (metadata.DietNomeat ? 1 << 2 : 0) +
-            (metadata.DietNoPork ? 1 << 3 : 0) +
-            (metadata.DietNoRedMeat ? 1 << 4 : 0) +
-            (metadata.MealBreakfast ? 1 << 5 : 0) +
-            (metadata.MealDessert ? 1 << 6 : 0) +
-            (metadata.MealDinner ? 1 << 7 : 0) +
-            (metadata.MealLunch ? 1 << 8 : 0) +
-            (metadata.NutritionLowCalorie ? 1 << 9 : 0) +
-            (metadata.NutritionLowCarb ? 1 << 10 : 0) +
-            (metadata.NutritionLowFat ? 1 << 11 : 0) +
-            (metadata.NutritionLowSodium ? 1 << 12 : 0) +
-            (metadata.NutritionLowSugar ? 1 << 13 : 0) +
-            (metadata.SkillCommon ? 1 << 14 : 0) +
-            (metadata.SkillEasy ? 1 << 15 : 0) +
-            (metadata.SkillQuick ? 1 << 16 : 0);
+          var tags = new RecipeTags();
+
+          if (metadata.DietGlutenFree)
+          {
+              tags.Add(RecipeTag.GlutenFree);
+          }
+
+          if (metadata.DietNoAnimals)
+          {
+              tags.Add(RecipeTag.NoAnimals);
+          }
+
+          if (metadata.DietNomeat)
+          {
+              tags.Add(RecipeTag.NoMeat);
+          }
+
+          if (metadata.DietNoPork)
+          {
+              tags.Add(RecipeTag.NoPork);
+          }
+
+          if (metadata.DietNoRedMeat)
+          {
+              tags.Add(RecipeTag.NoRedMeat);
+          }
+
+          if (metadata.MealBreakfast)
+          {
+              tags.Add(RecipeTag.Breakfast);
+          }
+
+          if (metadata.MealDessert)
+          {
+              tags.Add(RecipeTag.Dessert);
+          }
+
+          if (metadata.MealDinner)
+          {
+              tags.Add(RecipeTag.Dinner);
+          }
+
+          if (metadata.MealLunch)
+          {
+              tags.Add(RecipeTag.Lunch);
+          }
+
+          if (metadata.NutritionLowCalorie)
+          {
+              tags.Add(RecipeTag.LowCalorie);
+          }
+
+          if (metadata.NutritionLowCarb)
+          {
+              tags.Add(RecipeTag.LowCarb);
+          }
+
+          if (metadata.NutritionLowFat)
+          {
+              tags.Add(RecipeTag.LowFat);
+          }
+
+          if (metadata.NutritionLowSodium)
+          {
+              tags.Add(RecipeTag.LowSodium);
+          }
+
+          if (metadata.NutritionLowSugar)
+          {
+              tags.Add(RecipeTag.LowSugar);
+          }
+
+          if (metadata.SkillCommon)
+          {
+              tags.Add(RecipeTag.CommonIngredients);
+          }
+
+          if (metadata.SkillEasy)
+          {
+              tags.Add(RecipeTag.EasyToMake);
+          }
+
+          if (metadata.SkillQuick)
+          {
+              tags.Add(RecipeTag.Quick);
+          }
+
+          return tags;
       }
    }
 }

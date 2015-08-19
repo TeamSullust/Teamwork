@@ -17,11 +17,11 @@ namespace KPCServer.UnitTests
 
          pantry = new PantryItem[]
          {
-            new PantryItem() {IngredientId = ModelerTests.ING_EGGS, Amt = 6}, //6 eggs
-            new PantryItem() {IngredientId = ModelerTests.ING_MILK, Amt = 16}, //16 cups of milk (1 gallon)
-            new PantryItem() {IngredientId = ModelerTests.ING_FLOUR, Amt = 8}, //8oz flour
-            new PantryItem() {IngredientId = ModelerTests.ING_CHEESE, Amt = 16}, //16oz cheese
-            new PantryItem() {IngredientId = ModelerTests.ING_CHICKEN, Amt = 16} //16oz chicken
+            new PantryItem() {IngredientId = ModelerTests.ingEggs, Amt = 6}, //6 eggs
+            new PantryItem() {IngredientId = ModelerTests.ingMilk, Amt = 16}, //16 cups of milk (1 gallon)
+            new PantryItem() {IngredientId = ModelerTests.ingFlour, Amt = 8}, //8oz flour
+            new PantryItem() {IngredientId = ModelerTests.ingCheese, Amt = 16}, //16oz cheese
+            new PantryItem() {IngredientId = ModelerTests.ingChicken, Amt = 16} //16oz chicken
          };
       }
 
@@ -61,7 +61,7 @@ namespace KPCServer.UnitTests
       {
          get
          {
-            return 0;
+            return new RecipeTags();
          }
       } //Engine will tend to favor recipes with these tags
 
@@ -77,7 +77,7 @@ namespace KPCServer.UnitTests
       {
          get
          {
-            return new Guid[] {ModelerTests.ING_MILK};
+            return new Guid[] {ModelerTests.ingMilk};
          }
       } //Engine will never suggest any recipe with these ingredients, no matter what.
 

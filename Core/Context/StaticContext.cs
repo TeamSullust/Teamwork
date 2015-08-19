@@ -18,7 +18,15 @@ using IngredientUsage = KitchenPC.Ingredients.IngredientUsage;
 
 namespace KitchenPC.Context
 {
-   public class StaticContext : IKPCContext, IProvisionTarget, IProvisionSource
+    using KitchenPC.Fluent;
+    using KitchenPC.Fluent.RecipeHandlers;
+    using KitchenPC.Recipes.Enums;
+
+    using Ingredients = KitchenPC.Data.DTO.Ingredients;
+    using Menus = KitchenPC.Data.DTO.Menus;
+    using ShoppingLists = KitchenPC.Data.DTO.ShoppingLists;
+
+    public class StaticContext : IKPCContext, IProvisionTarget, IProvisionSource
    {
       readonly StaticContextBuilder builder;
       public string DataDirectory { get; set; }
@@ -267,7 +275,7 @@ namespace KitchenPC.Context
          }
          else
          {
-            userRating.Rating = (short) rating;
+            userRating.Rating = (short)rating;
          }
       }
 
@@ -277,9 +285,6 @@ namespace KitchenPC.Context
       /// <param name="recipe">Fully constructed Recipe object.</param>
       public RecipeResult CreateRecipe(Recipe recipe)
       {
-         Recipe.Validate(recipe);
-         recipe.Id = Guid.NewGuid();
-
          // TODO: We should update indexes rather than clear them all out, however this context isn't designed for performance
          store.ClearIndexes();
 
@@ -337,8 +342,8 @@ namespace KitchenPC.Context
             NutritionLowFat = recipe.Tags.HasTag(RecipeTag.LowFat),
             NutritionLowSodium = recipe.Tags.HasTag(RecipeTag.LowSodium),
             NutritionLowSugar = recipe.Tags.HasTag(RecipeTag.LowSugar),
-            SkillCommon = recipe.Tags.HasTag(RecipeTag.Common),
-            SkillEasy = recipe.Tags.HasTag(RecipeTag.Easy),
+            SkillCommon = recipe.Tags.HasTag(RecipeTag.CommonIngredients),
+            SkillEasy = recipe.Tags.HasTag(RecipeTag.EasyToMake),
             SkillQuick = recipe.Tags.HasTag(RecipeTag.Quick)
          });
 
@@ -422,7 +427,7 @@ namespace KitchenPC.Context
       /// <returns>A KitchenPC Ingredient object, or null if no matching ingredient was found.</returns>
       public Ingredient ReadIngredient(string ingredient)
       {
-         var ing = store.Ingredients.FirstOrDefault(i => String.Compare(i.DisplayName, ingredient, StringComparison.OrdinalIgnoreCase) == 0);
+         var ing = store.Ingredients.FirstOrDefault(i => string.Compare(i.DisplayName, ingredient, StringComparison.OrdinalIgnoreCase) == 0);
          return ing == null ? null : Data.DTO.Ingredients.ToIngredient(ing);
       }
 
@@ -434,7 +439,7 @@ namespace KitchenPC.Context
       public Ingredient ReadIngredient(Guid ingid)
       {
          var ingIndex = store.GetIndexedIngredients();
-         Data.DTO.Ingredients dtoIng;
+         Ingredients dtoIng;
 
          return ingIndex.TryGetValue(ingid, out dtoIng) ? Data.DTO.Ingredients.ToIngredient(dtoIng) : null;
       }
@@ -472,16 +477,16 @@ namespace KitchenPC.Context
 
          if (lists != null) // Load individual lists
          {
-            loadDef = lists.Contains(ShoppingList.Default);
+            loadDef = lists.Contains(ShoppingList.DefaultList);
             var ids = lists.Where(l => l.Id.HasValue).Select(l => l.Id.Value).ToArray();
             query = query.Where(p => ids.Contains(p.ShoppingListId));
          }
 
          var dbLists = query.ToList();
 
-         if (!options.LoadItems) // We're done!
+         if (!options.HasLoadedItems) // We're done!
          {
-            return (loadDef ? new ShoppingList[] {ShoppingList.Default} : new ShoppingList[0])
+            return (loadDef ? new[] {ShoppingList.DefaultList} : new ShoppingList[0])
                .Concat(dbLists.Select(Data.DTO.ShoppingLists.ToShoppingList))
                .ToArray();
          }
@@ -495,7 +500,7 @@ namespace KitchenPC.Context
          var indexIngredients = store.GetIndexedIngredients();
 
          var ret = new List<ShoppingList>();
-         if (loadDef) ret.Add(ShoppingList.Default);
+         if (loadDef) ret.Add(ShoppingList.DefaultList);
          ret.AddRange(dbLists.Select(Data.DTO.ShoppingLists.ToShoppingList));
 
          // Add items to list
@@ -595,7 +600,7 @@ namespace KitchenPC.Context
       public ShoppingListResult UpdateShoppingList(ShoppingList list, ShoppingListUpdateCommand[] updates, string newName = null)
       {
          // Aggregate new items
-         var parsedIng = Parser.ParseAll(updates.Where(u => !String.IsNullOrWhiteSpace(u.NewRaw)).Select(r => r.NewRaw).ToArray()).ToList();
+         var parsedIng = Parser.ParseAll(updates.Where(u => !string.IsNullOrWhiteSpace(u.NewRaw)).Select(r => r.NewRaw).ToArray()).ToList();
 
          var recipeAgg = AggregateRecipes(updates.Where(u => u.NewRecipe != null)
             .Select(r => r.NewRecipe.Id).ToArray());
@@ -639,7 +644,7 @@ namespace KitchenPC.Context
 
          // Updates
          Guid? shoppingListId = null;
-         Data.DTO.ShoppingLists dbList = null;
+         ShoppingLists dbList = null;
          List<ShoppingListItems> dbItems = null;
          if (listId.HasValue)
          {
@@ -655,7 +660,7 @@ namespace KitchenPC.Context
                .Where(p => p.ShoppingListId.Equals(dbList.ShoppingListId))
                .ToList();
 
-            if (!String.IsNullOrWhiteSpace(newName))
+            if (!string.IsNullOrWhiteSpace(newName))
                dbList.Title = newName;
 
             shoppingListId = dbList.ShoppingListId;
@@ -685,7 +690,7 @@ namespace KitchenPC.Context
          {
             var source = item.GetItem();
 
-            if (source.Ingredient == null && !String.IsNullOrWhiteSpace(source.Raw)) // Raw shopping list item
+            if (source.Ingredient == null && !string.IsNullOrWhiteSpace(source.Raw)) // Raw shopping list item
             {
                if (!dbItems.Any(i => source.Raw.Equals(i.Raw, StringComparison.OrdinalIgnoreCase))) // Add it
                {
@@ -890,7 +895,7 @@ namespace KitchenPC.Context
 
          ret.AddRange(dbMenus.Select(Data.DTO.Menus.ToMenu));
 
-         if (!options.LoadRecipes) // We're done!
+         if (!options.hasLoadedRecipes) // We're done!
             return ret.ToArray();
 
          var indexRecipes = store.GetIndexedRecipes();
@@ -938,9 +943,9 @@ namespace KitchenPC.Context
       public MenuResult UpdateMenu(Guid? menuId, Guid[] recipesAdd, Guid[] recipesRemove, MenuMove[] recipesMove, bool clear, string newName = null)
       {
          var ret = new MenuResult();
-         ret.MenuUpdated = true; // TODO: Verify actual changes were made before setting MenuUpdated to true
+         ret.IsMenuUpdated = true; // TODO: Verify actual changes were made before setting MenuUpdated to true
 
-         Data.DTO.Menus dbMenu = null;
+         Menus dbMenu = null;
          if (menuId.HasValue)
          {
             dbMenu = store.Menus.SingleOrDefault(p => p.MenuId == menuId);
@@ -955,7 +960,7 @@ namespace KitchenPC.Context
             .Where(p => p.MenuId == menuId)
             .ToList();
 
-         if (!String.IsNullOrWhiteSpace(newName) && dbMenu != null) // Rename menu
+         if (!string.IsNullOrWhiteSpace(newName) && dbMenu != null) // Rename menu
             dbMenu.Title = newName.Trim();
 
          if (recipesAdd.Any()) // Add recipes to menu
@@ -992,7 +997,7 @@ namespace KitchenPC.Context
          {
             foreach (var moveAction in recipesMove)
             {
-               Data.DTO.Menus dbTarget = null;
+               Menus dbTarget = null;
                if (moveAction.TargetMenu.HasValue)
                {
                   dbTarget = store.Menus
@@ -1003,7 +1008,7 @@ namespace KitchenPC.Context
                      throw new MenuNotFoundException(moveAction.TargetMenu.Value);
                }
 
-               var rToMove = (moveAction.MoveAll
+               var rToMove = (moveAction.AllMoved
                   ? dbFavorites
                   : dbFavorites.Where(r => moveAction.RecipesToMove.Contains(r.RecipeId)));
 
@@ -1025,7 +1030,7 @@ namespace KitchenPC.Context
          menu.Title = menu.Title.Trim();
          var ret = new MenuResult();
 
-         Data.DTO.Menus dbMenu;
+         Menus dbMenu;
          var dupes = store.Menus
             .Where(p => p.UserId == Identity.UserId)
             .Any(p => p.Title == menu.Title);
@@ -1056,7 +1061,7 @@ namespace KitchenPC.Context
             store.Favorites.Add(fav);
          }
 
-         ret.MenuCreated = true;
+         ret.IsMenuCreated = true;
          ret.NewMenuId = dbMenu.MenuId;
 
          return ret;
@@ -1197,7 +1202,7 @@ namespace KitchenPC.Context
       /// </summary>
       public void InitializeStore()
       {
-         if (String.IsNullOrWhiteSpace(DataDirectory))
+         if (string.IsNullOrWhiteSpace(DataDirectory))
             throw new InvalidConfigurationException("StaticContext requires a configured data directory.");
 
          if (!Directory.Exists(DataDirectory)) // Create directory

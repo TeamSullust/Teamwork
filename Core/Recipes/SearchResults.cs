@@ -1,21 +1,19 @@
-﻿using System;
-
-namespace KitchenPC.Recipes
+﻿namespace KitchenPC.Recipes
 {
-   public class SearchResults
-   {
-      public RecipeBrief[] Briefs;
+    public class SearchResults
+    {
+        public SearchResults(RecipeBrief[] briefs, long total)
+        {
+            this.Briefs = briefs;
+            this.TotalCount = total;
+        }
 
-      public Int64 TotalCount { get; set; }
+        public SearchResults()
+        {
+        }
 
-      public SearchResults(RecipeBrief[] briefs, Int64 total)
-      {
-         this.Briefs = briefs;
-         this.TotalCount = total;
-      }
+        public RecipeBrief[] Briefs { get; set; }
 
-      public SearchResults()
-      {
-      }
-   }
+        public long TotalCount { get; set; }
+    }
 }

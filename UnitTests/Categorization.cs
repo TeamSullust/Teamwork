@@ -1,52 +1,62 @@
-﻿using System;
-using System.Collections.Generic;
-using KitchenPC.Categorization;
-using KitchenPC.Recipes;
-using NUnit.Framework;
-
-namespace KitchenPC.UnitTests
+﻿namespace KitchenPC.UnitTests
 {
-   internal class MockIngredientCommonality : IIngredientCommonality
-   {
-      public Guid IngredientId { get; set; }
-      public float Commonality { get; set; }
+    using System;
+    using System.Collections.Generic;
+    using KitchenPC.Categorization;
+    using KitchenPC.Categorization.Interfaces;
+    using KitchenPC.Categorization.Logic;
+    using KitchenPC.Ingredients;
+    using KitchenPC.Recipes;
+    using KitchenPC.Recipes.Enums;
 
-      public MockIngredientCommonality(Guid ingid, float commonality)
-      {
-         IngredientId = ingid;
-         Commonality = commonality;
-      }
-   }
+    using NUnit.Framework;
 
-   internal class MockRecipeClassification : IRecipeClassification
-   {
-      public Recipe Recipe { get; set; }
+    internal class MockIngredientCommonality : IIngredientCommonality
+    {
 
-      public bool IsBreakfast { get; set; }
-      public bool IsLunch { get; set; }
-      public bool IsDinner { get; set; }
-      public bool IsDessert { get; set; }
 
-      public MockRecipeClassification()
-      {
-      }
+        public MockIngredientCommonality(Guid ingid, float commonality)
+        {
+            this.IngredientId = ingid;
+            this.Commonality = commonality;
+        }
 
-      public MockRecipeClassification(Recipe recipe, RecipeTag tag)
-      {
-         Recipe = recipe;
+        public Guid IngredientId { get; set; }
 
-         IsBreakfast = tag == RecipeTag.Breakfast;
-         IsLunch = tag == RecipeTag.Lunch;
-         IsDinner = tag == RecipeTag.Dinner;
-         IsDessert = tag == RecipeTag.Dessert;
-      }
-   }
+        public float Commonality { get; set; }
+    }
 
-   internal class MockCategorizationDBLoader : IDBLoader
-   {
-      public IEnumerable<IIngredientCommonality> LoadCommonIngredients()
-      {
-         return new MockIngredientCommonality[]
+    internal class MockRecipeClassification : IRecipeClassification
+    {
+        public MockRecipeClassification()
+        {
+        }
+
+        public MockRecipeClassification(Recipe recipe, RecipeTag tag)
+        {
+            this.Recipe = recipe;
+
+            this.IsBreakfast = tag == RecipeTag.Breakfast;
+            this.IsLunch = tag == RecipeTag.Lunch;
+            this.IsDinner = tag == RecipeTag.Dinner;
+            this.IsDessert = tag == RecipeTag.Dessert;
+        }
+
+        public Recipe Recipe { get; set; }
+
+        public bool IsBreakfast { get; set; }
+        public bool IsLunch { get; set; }
+
+        public bool IsDinner { get; set; }
+
+        public bool IsDessert { get; set; }
+    }
+
+    internal class MockCategorizationDBLoader : IDBLoader
+    {
+        public IEnumerable<IIngredientCommonality> LoadCommonIngredients()
+        {
+            return new MockIngredientCommonality[]
          {
             new MockIngredientCommonality(Mock.Ingredients.SALT.Id, 1f),
             new MockIngredientCommonality(Mock.Ingredients.GRANULATED_SUGAR.Id, 0.90f),
@@ -61,13 +71,13 @@ namespace KitchenPC.UnitTests
             new MockIngredientCommonality(Mock.Ingredients.LIGHT_BROWN_SUGAR.Id, 0.32f),
             new MockIngredientCommonality(Mock.Ingredients.BAKING_SODA.Id, 0.31f)
          };
-      }
+        }
 
-      public IEnumerable<IRecipeClassification> LoadTrainingData()
-      {
-         // Some fake training data to classify other recipes
+        public IEnumerable<IRecipeClassification> LoadTrainingData()
+        {
+            // Some fake training data to classify other recipes
 
-         return new MockRecipeClassification[]
+            return new MockRecipeClassification[]
          {
             // Breakfast
             new MockRecipeClassification(Mock.Recipes.MockRecipe("Patriotic French Toast", "French toast with a cream cheese topping and fresh fruit!"), RecipeTag.Breakfast),
@@ -97,55 +107,77 @@ namespace KitchenPC.UnitTests
             new MockRecipeClassification(Mock.Recipes.MockRecipe("Eclair Cake", "No bake -- Super easy!"), RecipeTag.Dessert),
             new MockRecipeClassification(Mock.Recipes.MockRecipe("Rum Cakes", "Mini Bundts -- Adorable!"), RecipeTag.Dessert)
          };
-      }
-   }
+        }
+    }
 
-   [TestFixture]
-   internal class Categorization
-   {
-      CategorizationEngine engine;
+    [TestFixture]
+    internal class Categorization
+    {
+        private CategorizationEngine engine;
 
-      [TestFixtureSetUp]
-      public void Setup()
-      {
-         engine = new CategorizationEngine(new MockCategorizationDBLoader());
-      }
+        [TestFixtureSetUp]
+        public void Setup()
+        {
+            this.engine = new CategorizationEngine(new MockCategorizationDBLoader());
+        }
 
-      [Test]
-      public void TestMeal()
-      {
-         // Strange sounding recipes, but these are designed to target certain frequently used words from the training data.
+        [Test]
+        public void TestMeal()
+        {
+            // Strange sounding recipes, but these are designed to target certain frequently used words from the training data.
+            var breakfast = this.engine.Categorize(Mock.Recipes.MockRecipe("French toast pancakes", "with crepes and muffins."));
+            var dinner = this.engine.Categorize(Mock.Recipes.MockRecipe("turkey ribs meatloaf", "parmesan barbeque"));
+            var dessert = this.engine.Categorize(Mock.Recipes.MockRecipe("cookies cake", "cookies and cake"));
 
-         var breakfast = engine.Categorize(Mock.Recipes.MockRecipe("French toast pancakes", "with crepes and muffins."));
-         var dinner = engine.Categorize(Mock.Recipes.MockRecipe("turkey ribs meatloaf", "parmesan barbeque"));
-         var dessert = engine.Categorize(Mock.Recipes.MockRecipe("cookies cake", "cookies and cake"));
+            Assert.IsTrue(breakfast.MealBreakfast, "Recipe should be classified as a breakfast.");
+            Assert.IsTrue(dinner.MealDinner, "Recipe should be classified as a dinner.");
+            Assert.IsTrue(dessert.MealDessert, "Recipe should be classified as a dessert.");
+        }
 
-         Assert.IsTrue(breakfast.Meal_Breakfast, "Recipe should be classified as a breakfast.");
-         Assert.IsTrue(dinner.Meal_Dinner, "Recipe should be classified as a dinner.");
-         Assert.IsTrue(dessert.Meal_Dessert, "Recipe should be classified as a dessert.");
-      }
+        [Test]
+        public void TestDiet()
+        {
+            var recepy = Mock.Recipes.MockRecipe("Gluten Free Juice", "No Gluten Trust me!");
+            var ingredient = new IngredientUsage { Ingredient = Mock.Ingredients.SALT };
+            recepy.AddIngredient(ingredient);
+            var categorization = this.engine.Categorize(recepy);
 
-      [Test]
-      public void TestDiet()
-      {
-          // TODO: Implement me
-      }
+            Assert.IsTrue(categorization.DietGlutenFree, "Recipe should be classified as Gluten Free.");
+            Assert.IsTrue(categorization.DietNoAnimals, "Recipe should be classified as No Animals.");
+            Assert.IsTrue(categorization.DietNoMeat, "Recipe should be classified as No Meat.");
+            Assert.IsTrue(categorization.DietNoPork, "Recipe should be classified as No Pork.");
+            Assert.IsTrue(categorization.DietNoRedMeat, "Recipe should be classified as No Red Meat.");
+        }
 
-      [Test]
-      public void TestNutrition()
-      {
-          // TODO: Implement me
-      }
+        [Test]
+        public void TestNutrition()
+        {
+            var nutrition = this.engine.Categorize(Mock.Recipes.MIRACLE_DIET);
 
-      [Test]
-      public void TestSkill()
-      {
-         var skill = engine.Categorize(Mock.Recipes.BEST_BROWNIES);
-      }
+            Assert.IsTrue(nutrition.NutritionLowCalorie);
+            Assert.IsTrue(nutrition.NutritionLowCarb);
+            Assert.IsTrue(nutrition.NutritionLowFat);
+            Assert.IsTrue(nutrition.NutritionLowSodium);
+            Assert.IsTrue(nutrition.NutritionLowSugar);
+        }
 
-      [Test]
-      public void TestTaste()
-      {
-      }
-   }
+        [Test]
+        public void TestSkill()
+        {
+            var skill = this.engine.Categorize(Mock.Recipes.QUICK_SANDWHICH);
+
+            Assert.IsTrue(skill.SkillEasy);
+            Assert.IsTrue(skill.SkillQuick);
+            Assert.IsTrue(skill.SkillCommon);
+        }
+
+        [Test]
+        public void TestTaste()
+        {
+            var taste = this.engine.Categorize(Mock.Recipes.SWEET_AND_SPICY_CHICKEN);
+
+            Assert.AreEqual(taste.TasteMildToSpicy, 125);
+            Assert.AreEqual(taste.TasteSavoryToSweet, 125);
+        }
+    }
 }

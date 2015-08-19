@@ -5,7 +5,9 @@ using KitchenPC.Recipes;
 
 namespace KitchenPC.Context
 {
-   internal class StaticSearch : ISearchProvider
+    using KitchenPC.Recipes.Enums;
+
+    internal class StaticSearch : ISearchProvider
    {
       readonly DataStore store;
 
@@ -40,7 +42,7 @@ namespace KitchenPC.Context
 
          if (query.Rating > 0)
          {
-            q = q.Where(p => p.Recipe.Rating >= (int) query.Rating.Value);
+            q = q.Where(p => p.Recipe.Rating >= (int) query.Rating);
          }
 
          if (query.Include != null && query.Include.Length > 0) // Add ingredients to include
@@ -53,12 +55,12 @@ namespace KitchenPC.Context
             q = q.Where(p => !p.Ingredients.Any(i => query.Exclude.Contains(i.IngredientId)));
          }
 
-         if (query.Photos == RecipeQuery.PhotoFilter.Photo || query.Photos == RecipeQuery.PhotoFilter.HighRes)
+         if (query.Photos == PhotoFilter.Photo || query.Photos == PhotoFilter.HighRes)
          {
             q = q.Where(p => p.Recipe.ImageUrl != null);
          }
 
-         if (query.Diet || query.Nutrition || query.Skill || query.Taste || (query.Meal != MealFilter.All) || (query.Photos == RecipeQuery.PhotoFilter.HighRes)) //Need to search in metadata
+         if (query.Diet || query.Nutrition || query.Skill || query.Taste || (query.Meal != MealFilter.All) || (query.Photos == PhotoFilter.HighRes)) //Need to search in metadata
          {
             //Meal
             if (query.Meal != MealFilter.All)
@@ -70,7 +72,7 @@ namespace KitchenPC.Context
             }
 
             //High-res photos
-            if (query.Photos == RecipeQuery.PhotoFilter.HighRes) q = q.Where(p => p.Metadata.PhotoRes >= 1024*768);
+            if (query.Photos == PhotoFilter.HighRes) q = q.Where(p => p.Metadata.PhotoRes >= 1024*768);
 
             //Diet
             if (query.Diet.GlutenFree) q = q.Where(p => p.Metadata.DietGlutenFree);
@@ -92,16 +94,16 @@ namespace KitchenPC.Context
             if (query.Skill.Quick) q = q.Where(p => p.Metadata.SkillQuick);
 
             //Taste
-            if (query.Taste.MildToSpicy != RecipeQuery.SpicinessLevel.Medium)
+            if (query.Taste.MildToSpicy != SpicinessLevel.Medium)
             {
-               q = query.Taste.MildToSpicy < RecipeQuery.SpicinessLevel.Medium
+               q = query.Taste.MildToSpicy < SpicinessLevel.Medium
                   ? q.Where(p => p.Metadata.TasteMildToSpicy <= query.Taste.Spiciness).OrderBy(p => p.Metadata.TasteMildToSpicy)
                   : q.Where(p => p.Metadata.TasteMildToSpicy >= query.Taste.Spiciness).OrderByDescending(p => p.Metadata.TasteMildToSpicy);
             }
 
-            if (query.Taste.SavoryToSweet != RecipeQuery.SweetnessLevel.Medium)
+            if (query.Taste.SavoryToSweet != SweetnessLevel.Medium)
             {
-               q = query.Taste.SavoryToSweet < RecipeQuery.SweetnessLevel.Medium
+               q = query.Taste.SavoryToSweet < SweetnessLevel.Medium
                   ? q.Where(p => p.Metadata.TasteSavoryToSweet <= query.Taste.Sweetness).OrderBy(p => p.Metadata.TasteSavoryToSweet)
                   : q.Where(p => p.Metadata.TasteSavoryToSweet >= query.Taste.Sweetness).OrderByDescending(p => p.Metadata.TasteSavoryToSweet);
             }
@@ -109,20 +111,20 @@ namespace KitchenPC.Context
 
          switch (query.Sort)
          {
-            case RecipeQuery.SortOrder.Title:
-               q = (query.Direction == RecipeQuery.SortDirection.Ascending) ? q.OrderBy(p => p.Recipe.Title) : q.OrderByDescending(p => p.Recipe.Title);
+            case SortOrder.Title:
+               q = (query.Direction == SortDirection.Ascending) ? q.OrderBy(p => p.Recipe.Title) : q.OrderByDescending(p => p.Recipe.Title);
                break;
-            case RecipeQuery.SortOrder.PrepTime:
-               q = (query.Direction == RecipeQuery.SortDirection.Ascending) ? q.OrderBy(p => p.Recipe.PrepTime) : q.OrderByDescending(p => p.Recipe.PrepTime);
+            case SortOrder.PrepTime:
+               q = (query.Direction == SortDirection.Ascending) ? q.OrderBy(p => p.Recipe.PrepTime) : q.OrderByDescending(p => p.Recipe.PrepTime);
                break;
-            case RecipeQuery.SortOrder.CookTime:
-               q = (query.Direction == RecipeQuery.SortDirection.Ascending) ? q.OrderBy(p => p.Recipe.CookTime) : q.OrderByDescending(p => p.Recipe.CookTime);
+            case SortOrder.CookTime:
+               q = (query.Direction == SortDirection.Ascending) ? q.OrderBy(p => p.Recipe.CookTime) : q.OrderByDescending(p => p.Recipe.CookTime);
                break;
-            case RecipeQuery.SortOrder.Image:
-               q = (query.Direction == RecipeQuery.SortDirection.Ascending) ? q.OrderBy(p => p.Recipe.ImageUrl) : q.OrderByDescending(p => p.Recipe.ImageUrl);
+            case SortOrder.Image:
+               q = (query.Direction == SortDirection.Ascending) ? q.OrderBy(p => p.Recipe.ImageUrl) : q.OrderByDescending(p => p.Recipe.ImageUrl);
                break;
             default:
-               q = (query.Direction == RecipeQuery.SortDirection.Ascending) ? q.OrderBy(p => p.Recipe.Rating) : q.OrderByDescending(p => p.Recipe.Rating);
+               q = (query.Direction == SortDirection.Ascending) ? q.OrderBy(p => p.Recipe.Rating) : q.OrderByDescending(p => p.Recipe.Rating);
                break;
          }
 

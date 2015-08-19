@@ -8,9 +8,9 @@ namespace KitchenPC.DB.Models
    public class Recipes
    {
       public virtual Guid RecipeId { get; set; }
-      public virtual short? CookTime { get; set; }
+      public virtual short CookTime { get; set; }
       public virtual string Steps { get; set; }
-      public virtual short? PrepTime { get; set; }
+      public virtual short PrepTime { get; set; }
       public virtual short Rating { get; set; }
       public virtual string Description { get; set; }
       public virtual string Title { get; set; }

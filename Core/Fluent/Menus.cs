@@ -60,9 +60,6 @@ namespace KitchenPC.Context.Fluent
       {
          get
          {
-            // BUGBUG: Technically, we should be creating a new instance and copying the menus over, as there might
-            // be a reference to the old chain somewhere that we'd be updating.
-
             loadRecipes = true;
             return this;
          }
@@ -92,7 +89,7 @@ namespace KitchenPC.Context.Fluent
       public IList<Menu> List()
       {
          var options = new GetMenuOptions();
-         options.LoadRecipes = loadRecipes;
+         options.hasLoadedRecipes = loadRecipes;
 
          return context.GetMenus(menusToLoad, options);
       }
@@ -199,18 +196,19 @@ namespace KitchenPC.Context.Fluent
 
       public MenuResult Commit()
       {
-         return context.UpdateMenu(menu.Id,
-            addQueue.Select(r => r.Id).ToArray(),
-            removeQueue.Select(r => r.Id).ToArray(),
-            moveQueue.Select(m => new MenuMove
-            {
-               MoveAll = m.All,
+          return this.context.UpdateMenu(
+              this.menu.Id,
+              this.addQueue.Select(r => r.Id).ToArray(),
+              this.removeQueue.Select(r => r.Id).ToArray(),
+              this.moveQueue.Select(
+                  m => new MenuMove
+                           {
+               AllMoved = m.All,
                RecipesToMove = m.Recipes.Select(r => r.Id).ToArray(),
                TargetMenu = m.TargetMenu.Id
-            }).ToArray(),
-            clearAll,
-            newTitle
-            );
+                           }).ToArray(),
+              this.clearAll,
+              this.newTitle);
       }
    }
 

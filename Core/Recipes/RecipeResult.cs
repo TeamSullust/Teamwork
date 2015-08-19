@@ -1,12 +1,13 @@
-﻿using System;
-
-namespace KitchenPC.Recipes
+﻿namespace KitchenPC.Recipes
 {
+    using System;
+
    public class RecipeResult
    {
-      public bool RecipeCreated;
-      public bool RecipeUpdated;
+       public bool RecipeCreated { get; set; }
 
-      public Guid? NewRecipeId;
+       public bool RecipeUpdated { get; set; }
+
+       public Guid? NewRecipeId { get; set; }
    }
 }

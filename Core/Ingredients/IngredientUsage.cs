@@ -3,7 +3,9 @@ using KitchenPC.Context.Fluent;
 
 namespace KitchenPC.Ingredients
 {
-   public class IngredientUsage
+    using KitchenPC.Fluent.RecipeHandlers;
+
+    public class IngredientUsage
    {
       public Ingredient Ingredient;
       public IngredientForm Form;

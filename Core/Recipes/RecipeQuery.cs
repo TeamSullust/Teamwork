@@ -1,165 +1,209 @@
-﻿using System;
-
-namespace KitchenPC.Recipes
+﻿namespace KitchenPC.Recipes
 {
-   public class RecipeQuery
-   {
-      public enum PhotoFilter
-      {
-         All,
-         Photo,
-         HighRes
-      }
+    using System;
+    using System.Collections.Generic;
 
-      public enum SortOrder
-      {
-         None,
-         Title,
-         PrepTime,
-         CookTime,
-         Rating,
-         Image
-      }
+    using KitchenPC.Recipes.Enums;
+    using KitchenPC.Recipes.Filters;
 
-      public enum SortDirection
-      {
-         Ascending,
-         Descending
-      }
+    public class RecipeQuery : ICloneable
+    {
+        private TimeFilter time;
 
-      public enum SpicinessLevel
-      {
-         Mild,
-         MildMedium,
-         Medium,
-         MediumSpicy,
-         Spicy
-      }
+        private DietFilter diet;
 
-      public enum SweetnessLevel
-      {
-         Savory,
-         SavoryMedium,
-         Medium,
-         MediumSweet,
-         Sweet
-      }
+        private NutritionFilter nutrition;
 
-      public struct TimeFilter
-      {
-         public short? MaxPrep;
-         public short? MaxCook;
+        private SkillFilter skill;
 
-         public static implicit operator bool(TimeFilter f)
-         {
-            return f.MaxPrep.HasValue || f.MaxCook.HasValue;
-         }
-      }
+        private TasteFilter tase;
 
-      public struct DietFilter
-      {
-         public bool GlutenFree;
-         public bool NoAnimals;
-         public bool NoMeat;
-         public bool NoPork;
-         public bool NoRedMeat;
+        private Guid[] include;
 
-         public static implicit operator bool(DietFilter f)
-         {
-            return f.GlutenFree || f.NoAnimals || f.NoMeat || f.NoPork || f.NoRedMeat;
-         }
-      }
+        private Guid[] exclude;
 
-      public struct NutritionFilter
-      {
-         public bool LowCalorie;
-         public bool LowCarb;
-         public bool LowFat;
-         public bool LowSodium;
-         public bool LowSugar;
+        public RecipeQuery()
+        {
+            this.Time = new TimeFilter();
+            this.Diet = new DietFilter();
+            this.Nutrition = new NutritionFilter();
+            this.Skill = new SkillFilter();
+            this.Taste = new TasteFilter();
+            this.Sort = SortOrder.Rating;
+            this.Direction = SortDirection.Descending;
+            this.Include = new Guid[0];
+            this.Exclude = new Guid[0];
+        }
 
-         public static implicit operator bool(NutritionFilter f)
-         {
-            return f.LowCalorie || f.LowCarb || f.LowFat || f.LowSodium || f.LowSugar;
-         }
-      }
+        public string Keywords { get; set; }
 
-      public struct SkillFilter
-      {
-         public bool Common;
-         public bool Easy;
-         public bool Quick;
+        public MealFilter Meal { get; set; }
 
-         public static implicit operator bool(SkillFilter f)
-         {
-            return f.Common || f.Easy || f.Quick;
-         }
-      }
-
-      public struct TasteFilter
-      {
-         public SpicinessLevel MildToSpicy;
-         public SweetnessLevel SavoryToSweet;
-
-         static readonly byte[] SpicyOffsets = {0, 2, 0, 3, 10};
-         static readonly byte[] SweetOffsets = {3, 10, 0, 20, 30};
-
-         public static implicit operator bool(TasteFilter f)
-         {
-            return f.MildToSpicy != SpicinessLevel.Medium || f.SavoryToSweet != SweetnessLevel.Medium;
-         }
-
-         public byte Spiciness
-         {
+        public TimeFilter Time
+        {
             get
             {
-               return SpicyOffsets[(int) MildToSpicy];
+                return this.time;
             }
-         }
 
-         public byte Sweetness
-         {
+            private set
+            {
+                if (value == null)
+                {
+                    throw new ArgumentNullException("value", "Recipe Query Time cannot be null.");
+                }
+
+                this.time = value;
+            }
+        }
+
+        public DietFilter Diet
+        {
             get
             {
-               return SweetOffsets[(int) SavoryToSweet];
+                return this.diet;
             }
-         }
-      }
 
-      public string Keywords;
-      public MealFilter Meal;
-      public Rating? Rating;
-      public Guid[] Include;
-      public Guid[] Exclude;
-      public Int32 Offset; //Used for paging
-      public TimeFilter Time;
-      public DietFilter Diet;
-      public NutritionFilter Nutrition;
-      public SkillFilter Skill;
-      public TasteFilter Taste;
-      public PhotoFilter Photos;
-      public SortOrder Sort;
-      public SortDirection Direction; //True if sort order is descending
+            private set
+            {
+                if (value == null)
+                {
+                    throw new ArgumentNullException("value", "Recipe Query Diet cannot be null.");
+                }
 
-      public RecipeQuery()
-      {
-         Taste.MildToSpicy = SpicinessLevel.Medium;
-         Taste.SavoryToSweet = SweetnessLevel.Medium;
+                this.diet = value;
+            }
+        }
 
-         Sort = SortOrder.Rating;
-         Direction = SortDirection.Descending;
-      }
+        public NutritionFilter Nutrition
+        {
+            get
+            {
+                return this.nutrition;
+            }
 
-      public RecipeQuery(RecipeQuery query)
-      {
-         this.Keywords = query.Keywords;
-         this.Rating = query.Rating;
-         if (query.Include != null) this.Include = (Guid[]) query.Include.Clone();
-         if (query.Exclude != null) this.Exclude = (Guid[]) query.Exclude.Clone();
-         this.Time = query.Time;
-         this.Photos = query.Photos;
-         this.Sort = query.Sort;
-         this.Direction = query.Direction;
-      }
-   }
+            private set
+            {
+                if (value == null)
+                {
+                    throw new ArgumentNullException("value", "Recipe Query Nutrition cannot be null.");
+                }
+
+                this.nutrition = value;
+            }
+        }
+
+        public SkillFilter Skill
+        {
+            get
+            {
+                return this.skill;
+            }
+
+            private set
+            {
+                if (value == null)
+                {
+                    throw new ArgumentNullException("value", "Recipe Query Skill cannot be null.");
+                }
+
+                this.skill = value;
+            }
+        }
+
+        public TasteFilter Taste
+        {
+            get
+            {
+                return this.tase;
+            }
+
+            private set
+            {
+                if (value == null)
+                {
+                    throw new ArgumentNullException("value", "Recipe Query Taste cannot be null.");
+                }
+
+                this.tase = value;
+            }
+        }
+
+        public Rating Rating { get; set; }
+
+        public Guid[] Include
+        {
+            get
+            {
+                return this.include;
+            }
+
+            set
+            {
+                if (value == null)
+                {
+                    throw new ArgumentNullException("value","Recipe Query Include cannot be null.");
+                }
+
+                this.include = value;
+            }
+        }
+
+        public Guid[] Exclude
+        {
+            get
+            {
+                return this.exclude;
+            }
+
+            set
+            {
+                if (value == null)
+                {
+                    throw new ArgumentNullException("value","Recipe Query Exclude cannot be null.");
+                }
+
+                this.exclude = value;
+            }
+        }
+
+        public int Offset { get; set; } // Used for paging
+
+        public PhotoFilter Photos { get; set; }
+
+        public SortOrder Sort { get; set; }
+
+        public SortDirection Direction { get; set; }
+
+        public object Clone()
+        {
+            var clonedQuery = new RecipeQuery()
+                                  {
+                                      Keywords = this.Keywords,
+                                      Rating = this.Rating,
+                                      Meal = this.Meal,
+                                      Offset = this.Offset,
+                                      Photos = this.Photos,
+                                      Sort = this.Sort,
+                                      Direction = this.Direction,
+                                      Time = this.Time.Clone() as TimeFilter,
+                                      Diet = this.Diet.Clone() as DietFilter,
+                                      Nutrition = this.Nutrition.Clone() as NutritionFilter,
+                                      Skill = this.Skill.Clone() as SkillFilter,
+                                      Taste = this.Taste.Clone() as TasteFilter
+                                  };
+
+            if (this.Include != null)
+            {
+                clonedQuery.Include = this.Include.Clone() as Guid[];
+            }
+
+            if (this.Exclude != null)
+            {
+                clonedQuery.Exclude = this.Exclude.Clone() as Guid[];
+            }
+
+            return clonedQuery;
+        }
+    }
 }

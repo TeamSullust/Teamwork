@@ -32,7 +32,7 @@ namespace KitchenPC.Context.Fluent
 
       public ShoppingListDeleter Delete(ShoppingList list)
       {
-         if (list == ShoppingList.Default)
+         if (list == ShoppingList.DefaultList)
             throw new FluentExpressionException("Cannot delete default shopping list.");
 
          return new ShoppingListDeleter(context, list);
@@ -93,7 +93,7 @@ namespace KitchenPC.Context.Fluent
       {
          var options = new GetShoppingListOptions
          {
-            LoadItems = loadItems
+            HasLoadedItems = loadItems
          };
 
          return context.GetShoppingLists(listsToLoad, options);
@@ -113,7 +113,7 @@ namespace KitchenPC.Context.Fluent
 
       public ShoppingListDeleter Delete(ShoppingList list)
       {
-         if (list == ShoppingList.Default)
+         if (list == ShoppingList.DefaultList)
             throw new FluentExpressionException("Cannot delete default shopping list.");
 
          deleteQueue.Add(list);
@@ -192,7 +192,7 @@ namespace KitchenPC.Context.Fluent
 
       public ShoppingListUpdater Rename(string newname)
       {
-         if (list == ShoppingList.Default)
+         if (list == ShoppingList.DefaultList)
             throw new FluentExpressionException("Cannot rename default shopping list.");
 
          newName = newname;
