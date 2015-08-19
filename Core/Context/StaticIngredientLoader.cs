@@ -5,6 +5,7 @@ using KitchenPC.Data;
 using KitchenPC.Data.DTO;
 using KitchenPC.Ingredients;
 using KitchenPC.NLP;
+using KitchenPC.NLP.Interfaces;
 
 namespace KitchenPC.Context
 {

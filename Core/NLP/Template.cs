@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
+using KitchenPC.NLP.Interfaces;
 using KitchenPC.NLP.Tokens;
 
 namespace KitchenPC.NLP

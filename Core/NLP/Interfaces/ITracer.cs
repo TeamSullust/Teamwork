@@ -1,4 +1,4 @@
-﻿namespace KitchenPC.NLP
+﻿namespace KitchenPC.NLP.Interfaces
 {
    public interface ITracer
    {

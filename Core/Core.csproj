@@ -190,11 +190,11 @@
     <Compile Include="NLP\Enums.cs" />
     <Compile Include="NLP\FormNode.cs" />
     <Compile Include="NLP\FormSynonyms.cs" />
-    <Compile Include="NLP\IGrammar.cs" />
+    <Compile Include="NLP\Interfaces\IGrammar.cs" />
     <Compile Include="NLP\IngredientNode.cs" />
     <Compile Include="NLP\IngredientSynonyms.cs" />
-    <Compile Include="NLP\ISynonymLoader.cs" />
-    <Compile Include="NLP\ITracer.cs" />
+    <Compile Include="NLP\Interfaces\ISynonymLoader.cs" />
+    <Compile Include="NLP\Interfaces\ITracer.cs" />
     <Compile Include="NLP\MatchData.cs" />
     <Compile Include="NLP\NameIngredientPair.cs" />
     <Compile Include="NLP\NlpTracer.cs" />

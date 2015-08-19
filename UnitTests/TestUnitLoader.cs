@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using KitchenPC.Ingredients;
 using KitchenPC.NLP;
+using KitchenPC.NLP.Interfaces;
 
 namespace KitchenPC.UnitTests
 {

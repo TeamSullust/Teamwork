@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using KitchenPC.NLP.Interfaces;
 
 namespace KitchenPC.NLP
 {

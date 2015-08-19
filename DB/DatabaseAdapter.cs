@@ -13,6 +13,7 @@ using KitchenPC.Ingredients;
 using KitchenPC.Menus;
 using KitchenPC.Modeler;
 using KitchenPC.NLP;
+using KitchenPC.NLP.Interfaces;
 using KitchenPC.Recipes;
 using KitchenPC.ShoppingLists;
 using NHibernate;

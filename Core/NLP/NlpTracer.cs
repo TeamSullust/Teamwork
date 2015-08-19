@@ -1,4 +1,6 @@
-﻿namespace KitchenPC.NLP
+﻿using KitchenPC.NLP.Interfaces;
+
+namespace KitchenPC.NLP
 {
    public static class NlpTracer
    {

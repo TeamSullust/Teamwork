@@ -1,5 +1,6 @@
 using System.IO;
 using System.Text;
+using KitchenPC.NLP.Interfaces;
 
 namespace KitchenPC.NLP.Tokens
 {

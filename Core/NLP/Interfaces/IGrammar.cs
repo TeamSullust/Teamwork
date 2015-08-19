@@ -1,6 +1,6 @@
 ﻿using System.IO;
 
-namespace KitchenPC.NLP
+namespace KitchenPC.NLP.Interfaces
 {
    public interface IGrammar
    {

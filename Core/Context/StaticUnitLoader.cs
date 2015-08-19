@@ -3,6 +3,7 @@ using System.Linq;
 using KitchenPC.Data;
 using KitchenPC.Ingredients;
 using KitchenPC.NLP;
+using KitchenPC.NLP.Interfaces;
 
 namespace KitchenPC.Context
 {

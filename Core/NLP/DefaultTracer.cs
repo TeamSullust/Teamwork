@@ -1,4 +1,5 @@
-﻿using log4net;
+﻿using KitchenPC.NLP.Interfaces;
+using log4net;
 
 namespace KitchenPC.NLP
 {

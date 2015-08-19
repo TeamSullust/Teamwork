@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using KitchenPC.DB.Models;
 using KitchenPC.Ingredients;
 using KitchenPC.NLP;
+using KitchenPC.NLP.Interfaces;
 using NHibernate.Criterion;
 
 namespace KitchenPC.DB

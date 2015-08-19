@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace KitchenPC.NLP
+namespace KitchenPC.NLP.Interfaces
 {
    public interface ISynonymLoader<T>
    {

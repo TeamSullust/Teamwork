@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using KitchenPC.DB.Models;
 using KitchenPC.NLP;
+using KitchenPC.NLP.Interfaces;
 
 namespace KitchenPC.DB
 {
