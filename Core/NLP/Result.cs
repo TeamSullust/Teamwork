@@ -52,17 +52,12 @@ namespace KitchenPC.NLP
          //If we parsed a custom unit (heads of lettuce), check if there's a mapping for that unit name to the ingredient and use that form
          if (matchdata.Unit is CustomUnitNode)
          {
-            IngredientForm form;
-            if (UnitSynonyms.TryGetFormForIngredient(matchdata.Unit.Name, matchdata.Ingredient.Id, out form))
-            {
-               NlpTracer.Trace(TraceLevel.Debug, "[BuildResult] Based on unit name {0}, linking to form id {1}", matchdata.Unit.Name, form.FormId);
-               result.Form = form;
-            }
-            else
-            {
-               NlpTracer.Trace(TraceLevel.Debug, "[BuildResult] ERROR: Unable to find link between unit '{0}' and ingredient '{1}'.", matchdata.Unit.Name, result.Ingredient.Name);
-               return new NoMatch(input, MatchResult.UnknownUnit); //User specified a custom form that is not in any way linked to this ingredient, this is an error condition
-            }
+             Result noMatch;
+             bool hasReturned = ProcessCustimUnitNode(input, matchdata, result, out noMatch);
+             if (hasReturned)
+             {
+                 return noMatch;
+             }
          }
          else
          {
@@ -72,17 +67,12 @@ namespace KitchenPC.NLP
          //If we parsed a form alias (shredded), lookup the FormID from the formname/ingredient map (will override unit alias)
          if (matchdata.Form != null)
          {
-            IngredientForm form;
-            if (FormSynonyms.TryGetFormForIngredient(matchdata.Form.FormName, matchdata.Ingredient.Id, out form))
-            {
-               NlpTracer.Trace(TraceLevel.Debug, "[BuildResult] Based on reference to form {0}, linking to form id {1}", matchdata.Form.FormName, form.FormId);
-               result.Form = form;
-            }
-            else
-            {
-               NlpTracer.Trace(TraceLevel.Debug, "[BuildResult] ERROR: Unable to find link between form '{0}' and ingredient '{1}.", matchdata.Form.FormName, result.Ingredient.Name);
-               return new NoMatch(input, MatchResult.UnknownForm); //User specified a form that is not in any way linked to this ingredient, this is an error condition
-            }
+             Result MatchDataFormResult;
+             bool hasReturned = ProcessMatchDataNullForm(input, matchdata, result, out MatchDataFormResult);
+             if (hasReturned)
+             {
+                 return MatchDataFormResult;
+             }
          }
          else
          {
@@ -91,37 +81,7 @@ namespace KitchenPC.NLP
 
          if (result.Form == null) //Load default form for parsed unit type
          {
-            if (matchdata.Unit == null || matchdata.Unit.Unit == Units.Unit) //TODO: Is second part necessary? Only Units.Unit would be custom form types, and we'd have errored out already if that didn't match
-            {
-               result.Form = pairings.Unit;
-               NlpTracer.ConditionalTrace(pairings.HasUnit, TraceLevel.Debug, "[BuildResult] Linking to default Unit paired form {0}", pairings.Unit);
-            }
-            else
-            {
-               switch (Unit.GetConvType(matchdata.Unit.Unit))
-               {
-                  case UnitType.Volume:
-                     result.Form = pairings.Volume;
-                     NlpTracer.ConditionalTrace(pairings.HasVolume, TraceLevel.Debug, "[BuildResult] Linking to default paired Volume form {0}", pairings.Volume);
-                     break;
-                  case UnitType.Weight:
-                     result.Form = pairings.Weight;
-                     NlpTracer.ConditionalTrace(pairings.HasWeight, TraceLevel.Debug, "[BuildResult] Linking to default paired Weight form {0}", pairings.Weight);
-                     break;
-               }
-            }
-
-            if (result.Form == null && result.Amount.Unit == Units.Ounce && pairings.HasVolume) //Try as FluidOunces because so many recipes use oz when they mean fl oz
-            {
-               result.Form = pairings.Volume;
-               result.Amount.Unit = Units.FluidOunce;
-               NlpTracer.Trace(TraceLevel.Debug, "[BuildResult] Interpretting reference to Ounces as Fluid Ounces and linking to volumetric form {0}", pairings.Volume);
-            }
-
-            if (result.Form == null)
-            {
-               NlpTracer.Trace(TraceLevel.Debug, "[BuildResult] Could not find any default pairing for the unit type: {0}", result.Amount.Unit);
-            }
+            LoadDefaultForm(matchdata, result, pairings);
          }
 
          //If we've loaded a form type and they're compatible, return match
@@ -141,24 +101,12 @@ namespace KitchenPC.NLP
          // TODO: If matchdata has multiple prep notes, we either need to only parse the user entered one or avoid duplicate matches
          if (parsedType == UnitType.Volume && matchdata.Preps.HasValue)
          {
-            NlpTracer.Trace(TraceLevel.Debug, "[BuildResult] Checking for form matching prep note: {0}", matchdata.Preps);
-
-            IngredientForm form;
-            if (FormSynonyms.TryGetFormForPrep(matchdata.Preps, matchdata.Ingredient, true, out form))
-            {
-               result.Form = form;
-
-               if (parsedType == Unit.GetConvType(result.Form.FormUnitType))
-               {
-                  NlpTracer.Trace(TraceLevel.Debug, "[BuildResult] SUCCESS: Found matching volumetric form, allowing prep to form fall-through.");
-                  result.PrepNote = matchdata.Preps.ToString();
-                  return new AnomalousMatch(input, AnomalousResult.Fallthrough, result);
-               }
-               else
-               {
-                  NlpTracer.Trace(TraceLevel.Debug, "[BuildResult] Found matching form, but form is not compatible with volumetric usage.");
-               }
-            }
+             Result anomalousMatch;
+             bool hasReturned = ProcessAnomalousMatch(input, matchdata, result, parsedType, out anomalousMatch);
+             if (hasReturned)
+             {
+                 return anomalousMatch;
+             }
          }
          else
          {
@@ -168,39 +116,13 @@ namespace KitchenPC.NLP
          // Auto Form Conversion: If we can make a valid assumption about a form even if unit type is incompatible, we can convert to another form, eg: 5oz shredded cheese --> cheese: 5oz (shredded)
          if (result.Form != null)
          {
-            NlpTracer.Trace(TraceLevel.Debug, "[BuildResult] Form and unit incompatible - attempting to auto-convert form {0}", result.Form);
-            var formType = Unit.GetConvType(result.Form.FormUnitType);
-
-            if (parsedType == UnitType.Weight && formType == UnitType.Volume && pairings.HasWeight) //Something like 3oz shredded cheddar cheese, we need to use a weight form and set prep note
-            {
-               NlpTracer.Trace(TraceLevel.Debug, "[BuildResult] SUCCESS: Converting to default weight pairing, and setting prep note to: {0}", result.Form.FormDisplayName);
-               result.PrepNote = result.Form.FormDisplayName;
-               result.Form = pairings.Weight;
-               return new AnomalousMatch(input, AnomalousResult.AutoConvert, result);
-            }
-            else if (parsedType == UnitType.Unit && formType == UnitType.Volume) //Something like 3 mashed bananas
-            {
-               if (pairings.HasUnit && (matchdata.Unit == null || String.IsNullOrEmpty(matchdata.Unit.Name))) //No custom unit, just use default pairing
-               {
-                  NlpTracer.Trace(TraceLevel.Debug, "[BuildResult] SUCCESS: Converting to default unit pairing, and setting prep note to: {0}", result.Form.FormDisplayName);
-                  result.PrepNote = result.Form.FormDisplayName;
-                  result.Form = pairings.Unit;
-                  return new AnomalousMatch(input, AnomalousResult.AutoConvert, result);
-               }
-
-               if (matchdata.Unit != null && false == String.IsNullOrEmpty(matchdata.Unit.Name)) //We have a custom unit
-               {
-                  IngredientForm form;
-                  NlpTracer.Trace(TraceLevel.Debug, "[BuildResult] Attempting to convert volumetric usage to unit form for custom unit: {0}", matchdata.Unit.Name);
-                  if (UnitSynonyms.TryGetFormForIngredient(matchdata.Unit.Name, matchdata.Ingredient.Id, out form))
-                  {
-                     NlpTracer.Trace(TraceLevel.Debug, "[BuildResult] SUCCESS: Converting to custom unit pairing, and setting prep note to: {0}", result.Form.FormDisplayName);
-                     result.PrepNote = result.Form.FormDisplayName;
-                     result.Form = form;
-                     return new AnomalousMatch(input, AnomalousResult.AutoConvert, result);
-                  }
-               }
-            }
+             Result AutoConversionResult;
+             bool wasConverted = AutoFormConvert(input, matchdata, result, parsedType, pairings,
+                 out AutoConversionResult);
+             if (wasConverted)
+             {
+                 return AutoConversionResult;
+             }
          }
          else
          {
@@ -217,5 +139,185 @@ namespace KitchenPC.NLP
          NlpTracer.Trace(TraceLevel.Debug, "[BuildResult] ERROR: Anomalous parsing could not fix form/unit incompatibility.");
          return new NoMatch(input, MatchResult.IncompatibleForm);
       }
+
+       private static bool AutoFormConvert(string input, MatchData matchdata, IngredientUsage result, UnitType parsedType,
+           DefaultPairings pairings, out Result autoConvertResult)
+       {
+           NlpTracer.Trace(TraceLevel.Debug, "[BuildResult] Form and unit incompatible - attempting to auto-convert form {0}",
+               result.Form);
+           var formType = Unit.GetConvType(result.Form.FormUnitType);
+
+           if (parsedType == UnitType.Weight && formType == UnitType.Volume && pairings.HasWeight)
+               //Something like 3oz shredded cheddar cheese, we need to use a weight form and set prep note
+           {
+               NlpTracer.Trace(TraceLevel.Debug,
+                   "[BuildResult] SUCCESS: Converting to default weight pairing, and setting prep note to: {0}",
+                   result.Form.FormDisplayName);
+               result.PrepNote = result.Form.FormDisplayName;
+               result.Form = pairings.Weight;
+               {
+                   autoConvertResult = new AnomalousMatch(input, AnomalousResult.AutoConvert, result);
+                   return true;
+               }
+           }
+           else if (parsedType == UnitType.Unit && formType == UnitType.Volume) //Something like 3 mashed bananas
+           {
+               if (pairings.HasUnit && (matchdata.Unit == null || String.IsNullOrEmpty(matchdata.Unit.Name)))
+                   //No custom unit, just use default pairing
+               {
+                   NlpTracer.Trace(TraceLevel.Debug,
+                       "[BuildResult] SUCCESS: Converting to default unit pairing, and setting prep note to: {0}",
+                       result.Form.FormDisplayName);
+                   result.PrepNote = result.Form.FormDisplayName;
+                   result.Form = pairings.Unit;
+                   {
+                       autoConvertResult = new AnomalousMatch(input, AnomalousResult.AutoConvert, result);
+                       return true;
+                   }
+               }
+
+               if (matchdata.Unit != null && false == String.IsNullOrEmpty(matchdata.Unit.Name)) //We have a custom unit
+               {
+                   IngredientForm form;
+                   NlpTracer.Trace(TraceLevel.Debug,
+                       "[BuildResult] Attempting to convert volumetric usage to unit form for custom unit: {0}",
+                       matchdata.Unit.Name);
+                   if (UnitSynonyms.TryGetFormForIngredient(matchdata.Unit.Name, matchdata.Ingredient.Id, out form))
+                   {
+                       NlpTracer.Trace(TraceLevel.Debug,
+                           "[BuildResult] SUCCESS: Converting to custom unit pairing, and setting prep note to: {0}",
+                           result.Form.FormDisplayName);
+                       result.PrepNote = result.Form.FormDisplayName;
+                       result.Form = form;
+                       {
+                           autoConvertResult = new AnomalousMatch(input, AnomalousResult.AutoConvert, result);
+                           return true;
+                       }
+                   }
+               }
+           }
+           autoConvertResult = null;
+           return false;
+       }
+
+       private static bool ProcessAnomalousMatch(string input, MatchData matchdata, IngredientUsage result, UnitType parsedType,
+           out Result anomalousMatch)
+       {
+           NlpTracer.Trace(TraceLevel.Debug, "[BuildResult] Checking for form matching prep note: {0}", matchdata.Preps);
+
+           IngredientForm form;
+           if (FormSynonyms.TryGetFormForPrep(matchdata.Preps, matchdata.Ingredient, true, out form))
+           {
+               result.Form = form;
+
+               if (parsedType == Unit.GetConvType(result.Form.FormUnitType))
+               {
+                   NlpTracer.Trace(TraceLevel.Debug,
+                       "[BuildResult] SUCCESS: Found matching volumetric form, allowing prep to form fall-through.");
+                   result.PrepNote = matchdata.Preps.ToString();
+                   {
+                       anomalousMatch = new AnomalousMatch(input, AnomalousResult.Fallthrough, result);
+                       return true;
+                   }
+               }
+               else
+               {
+                   NlpTracer.Trace(TraceLevel.Debug,
+                       "[BuildResult] Found matching form, but form is not compatible with volumetric usage.");
+               }
+           }
+           anomalousMatch = null;
+           return false;
+       }
+
+       private static void LoadDefaultForm(MatchData matchdata, IngredientUsage result, DefaultPairings pairings)
+       {
+           if (matchdata.Unit == null || matchdata.Unit.Unit == Units.Unit)
+               //TODO: Is second part necessary? Only Units.Unit would be custom form types, and we'd have errored out already if that didn't match
+           {
+               result.Form = pairings.Unit;
+               NlpTracer.ConditionalTrace(pairings.HasUnit, TraceLevel.Debug,
+                   "[BuildResult] Linking to default Unit paired form {0}", pairings.Unit);
+           }
+           else
+           {
+               switch (Unit.GetConvType(matchdata.Unit.Unit))
+               {
+                   case UnitType.Volume:
+                       result.Form = pairings.Volume;
+                       NlpTracer.ConditionalTrace(pairings.HasVolume, TraceLevel.Debug,
+                           "[BuildResult] Linking to default paired Volume form {0}", pairings.Volume);
+                       break;
+                   case UnitType.Weight:
+                       result.Form = pairings.Weight;
+                       NlpTracer.ConditionalTrace(pairings.HasWeight, TraceLevel.Debug,
+                           "[BuildResult] Linking to default paired Weight form {0}", pairings.Weight);
+                       break;
+               }
+           }
+
+           if (result.Form == null && result.Amount.Unit == Units.Ounce && pairings.HasVolume)
+               //Try as FluidOunces because so many recipes use oz when they mean fl oz
+           {
+               result.Form = pairings.Volume;
+               result.Amount.Unit = Units.FluidOunce;
+               NlpTracer.Trace(TraceLevel.Debug,
+                   "[BuildResult] Interpretting reference to Ounces as Fluid Ounces and linking to volumetric form {0}",
+                   pairings.Volume);
+           }
+
+           if (result.Form == null)
+           {
+               NlpTracer.Trace(TraceLevel.Debug, "[BuildResult] Could not find any default pairing for the unit type: {0}",
+                   result.Amount.Unit);
+           }
+       }
+
+       private static bool ProcessMatchDataNullForm(string input, MatchData matchdata, IngredientUsage result,
+           out Result buildResultNullForm)
+       {
+           IngredientForm form;
+           if (FormSynonyms.TryGetFormForIngredient(matchdata.Form.FormName, matchdata.Ingredient.Id, out form))
+           {
+               NlpTracer.Trace(TraceLevel.Debug, "[BuildResult] Based on reference to form {0}, linking to form id {1}",
+                   matchdata.Form.FormName, form.FormId);
+               result.Form = form;
+           }
+           else
+           {
+               NlpTracer.Trace(TraceLevel.Debug,
+                   "[BuildResult] ERROR: Unable to find link between form '{0}' and ingredient '{1}.", matchdata.Form.FormName,
+                   result.Ingredient.Name);
+               {
+                   buildResultNullForm = new NoMatch(input, MatchResult.UnknownForm);
+                   return true;
+               }
+           }
+           buildResultNullForm = null;
+           return false;
+       }
+
+       private static bool ProcessCustimUnitNode(string input, MatchData matchdata, IngredientUsage result, out Result noMatch)
+       {
+           IngredientForm form;
+           if (UnitSynonyms.TryGetFormForIngredient(matchdata.Unit.Name, matchdata.Ingredient.Id, out form))
+           {
+               NlpTracer.Trace(TraceLevel.Debug, "[BuildResult] Based on unit name {0}, linking to form id {1}",
+                   matchdata.Unit.Name, form.FormId);
+               result.Form = form;
+           }
+           else
+           {
+               NlpTracer.Trace(TraceLevel.Debug,
+                   "[BuildResult] ERROR: Unable to find link between unit '{0}' and ingredient '{1}'.", matchdata.Unit.Name,
+                   result.Ingredient.Name);
+               {
+                   noMatch = new NoMatch(input, MatchResult.UnknownUnit);
+                   return true;
+               }
+           }
+           noMatch = null;
+           return false;
+       }
    }
 }
