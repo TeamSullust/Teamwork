@@ -152,7 +152,13 @@
     <Compile Include="Context\StaticPrepLoader.cs" />
     <Compile Include="Context\StaticSearch.cs" />
     <Compile Include="Context\StaticUnitLoader.cs" />
+    <Compile Include="Exceptions\CouldNotParseUsageException.cs" />
+    <Compile Include="Exceptions\DataLoadException.cs" />
+    <Compile Include="Exceptions\DataStoreException.cs" />
+    <Compile Include="Exceptions\DuplicatePantryItemException.cs" />
+    <Compile Include="Exceptions\EmptyPantryException.cs" />
     <Compile Include="Enums.cs" />
+    <Compile Include="Exceptions\FluentExpressionException.cs" />
     <Compile Include="Fluent\RecipeHandlers\IngredientAdder.cs" />
     <Compile Include="Fluent\RecipeHandlers\IngredientUsageCreator.cs" />
     <Compile Include="Fluent\RecipeHandlers\RecipeAction.cs" />
@@ -163,6 +169,11 @@
     <Compile Include="Fluent\RecipeHandlers\RecipeRater.cs" />
     <Compile Include="FormConversion.cs" />
     <Compile Include="Fractions.cs" />
+    <Compile Include="Exceptions\ImpossibleQueryException.cs" />
+    <Compile Include="Exceptions\IncompatibleAmountException.cs" />
+    <Compile Include="Exceptions\IngredientMapInvalidIngredientException.cs" />
+    <Compile Include="Exceptions\IngredientMapNotInitializedException.cs" />
+    <Compile Include="Exceptions\IngredientNotFoundException.cs" />
     <Compile Include="Ingredients\Ingredient.cs" />
     <Compile Include="Ingredients\IngredientAggregation.cs" />
     <Compile Include="Ingredients\IngredientForm.cs" />
@@ -171,6 +182,13 @@
     <Compile Include="Ingredients\IngredientSection.cs" />
     <Compile Include="Ingredients\IngredientUsage.cs" />
     <Compile Include="Ingredients\IngredientUsageCollection.cs" />
+    <Compile Include="Exceptions\InvalidConfigurationException.cs" />
+    <Compile Include="Exceptions\InvalidFormException.cs" />
+    <Compile Include="Exceptions\InvalidRecipeDataException.cs" />
+    <Compile Include="Exceptions\KPCException.cs" />
+    <Compile Include="Exceptions\MenuAlreadyExistsException.cs" />
+    <Compile Include="Exceptions\MenuIdRequiredException.cs" />
+    <Compile Include="Exceptions\MenuNotFoundException.cs" />
     <Compile Include="Menus\GetMenuOptions.cs" />
     <Compile Include="Menus\Menu.cs" />
     <Compile Include="Menus\MenuMove.cs" />
@@ -230,6 +248,7 @@
     <Compile Include="NLP\Tokens\UnitToken.cs" />
     <Compile Include="NLP\UnitNode.cs" />
     <Compile Include="NLP\UnitSynonyms.cs" />
+    <Compile Include="Exceptions\NoConfiguredSearchProvidersException.cs" />
     <Compile Include="Provisioning\DataStore.cs" />
     <Compile Include="Context\DBContext.cs" />
     <Compile Include="Context\IConfiguration.cs" />
@@ -238,7 +257,6 @@
     <Compile Include="Context\IngredientSource.cs" />
     <Compile Include="Context\KPCContext.cs" />
     <Compile Include="Context\StaticContext.cs" />
-    <Compile Include="Exceptions.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="Fluent\Menus.cs" />
     <Compile Include="Fluent\Modeler.cs" />
@@ -276,6 +294,7 @@
     <Compile Include="Provisioning\IProvisionSource.cs" />
     <Compile Include="Provisioning\IProvisioner.cs" />
     <Compile Include="Provisioning\IProvisionTarget.cs" />
+    <Compile Include="Exceptions\RecipeNotFoundException.cs" />
     <Compile Include="Recipes\Enums\Enums.cs" />
     <Compile Include="Recipes\Filters\DietFilter.cs" />
     <Compile Include="Recipes\Filters\NutritionFilter.cs" />
@@ -290,6 +309,7 @@
     <Compile Include="Recipes\Enums\RecipeTag.cs" />
     <Compile Include="Recipes\RecipeTags.cs" />
     <Compile Include="Recipes\SearchResults.cs" />
+    <Compile Include="Exceptions\ShoppingListNotFoundException.cs" />
     <Compile Include="ShoppingLists\Enums.cs" />
     <Compile Include="ShoppingLists\GetShoppingListOptions.cs" />
     <Compile Include="ShoppingLists\IShoppingListSource.cs" />
@@ -301,6 +321,8 @@
     <Compile Include="AuthIdentity.cs" />
     <Compile Include="Unit.cs" />
     <Compile Include="UnitConverter.cs" />
+    <Compile Include="Exceptions\UnknownTokenException.cs" />
+    <Compile Include="Exceptions\UserDoesNotOwnMenuException.cs" />
     <Compile Include="Weight.cs" />
   </ItemGroup>
   <ItemGroup>

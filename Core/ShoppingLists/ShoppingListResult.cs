@@ -4,8 +4,8 @@ namespace KitchenPC.ShoppingLists
 {
     public class ShoppingListResult
     {
-        public Guid? NewShoppingListId;
+        public Guid? NewShoppingListId { get; set; }
 
-        public ShoppingList List;
+        public ShoppingList List { get; set; }
     }
 }

@@ -14,12 +14,12 @@ namespace KitchenPC
         public static Amount Normalize(Amount amount, float multiplier)
         {
             var result = new Amount(amount) * multiplier;
-            var low = result.SizeLow.GetValueOrDefault();
-            var hi = result.SizeHigh;
+            var sizeLow = result.SizeLow.GetValueOrDefault();
+            var sizeHigh = result.SizeHigh;
 
             if (KitchenPC.Unit.GetConvType(result.Unit) == UnitType.Weight)
             {
-                if (result.Unit == Units.Ounce && (low % 16 + hi % 16) == 0)
+                if (result.Unit == Units.Ounce && (sizeLow % 16 + sizeHigh % 16) == 0)
                 {
                     result /= 16;
                     result.Unit = Units.Pound;
@@ -29,28 +29,28 @@ namespace KitchenPC
             if (KitchenPC.Unit.GetConvType(result.Unit) == UnitType.Volume)
             {
                 //If teaspoons, convert to Tlb (3tsp in 1Tbl)
-                if (result.Unit == Units.Teaspoon && (low % 3 + hi % 3) == 0)
+                if (result.Unit == Units.Teaspoon && (sizeLow % 3 + sizeHigh % 3) == 0)
                 {
                     result /= 3;
                     result.Unit = Units.Tablespoon;
                 }
 
                 //If Fl Oz, convert to cup (8 fl oz in 1 cup)
-                if (result.Unit == Units.FluidOunce && (low % 8 + hi % 8) == 0)
+                if (result.Unit == Units.FluidOunce && (sizeLow % 8 + sizeHigh % 8) == 0)
                 {
                     result /= 8;
                     result.Unit = Units.Cup;
                 }
 
                 //If pints, convert to quarts (2 pints in a quart)
-                if (result.Unit == Units.Pint && (low % 2 + hi % 2) == 0)
+                if (result.Unit == Units.Pint && (sizeLow % 2 + sizeHigh % 2) == 0)
                 {
                     result /= 2;
                     result.Unit = Units.Quart;
                 }
 
                 //If quarts, convert to gallons (4 quarts in a gallon)
-                if (result.Unit == Units.Quart && (low % 4 + hi % 4) == 0)
+                if (result.Unit == Units.Quart && (sizeLow % 4 + sizeHigh % 4) == 0)
                 {
                     result /= 4;
                     result.Unit = Units.Gallon;
@@ -66,10 +66,10 @@ namespace KitchenPC
             Unit = unit;
         }
 
-        public Amount(Single? from, Single to, Units unit)
+        public Amount(Single? receivedSize, Single receivingSize, Units unit)
         {
-            SizeLow = from;
-            SizeHigh = to;
+            SizeLow = receivedSize;
+            SizeHigh = receivingSize;
             Unit = unit;
         }
 
@@ -109,14 +109,32 @@ namespace KitchenPC
         {
             if (firstAmount.Unit == secondAmount.Unit) //Just add
             {
-                if (firstAmount.SizeLow.HasValue && secondAmount.SizeLow.HasValue) //Combine the lows, combine the highs
-                    return new Amount(firstAmount.SizeLow + secondAmount.SizeLow, firstAmount.SizeHigh + secondAmount.SizeHigh, firstAmount.Unit);
-
-                if (firstAmount.SizeLow.HasValue) //(1-2) + 1 = (2-3)
-                    return new Amount(firstAmount.SizeLow + secondAmount.SizeHigh, firstAmount.SizeHigh + secondAmount.SizeHigh, firstAmount.Unit);
-
-                if (secondAmount.SizeLow.HasValue) //1 + (1-2) = (2-3)
-                    return new Amount(firstAmount.SizeHigh + secondAmount.SizeLow, firstAmount.SizeHigh + secondAmount.SizeHigh, firstAmount.Unit);
+                if (firstAmount.SizeLow.HasValue && secondAmount.SizeLow.HasValue)
+                {
+                    //Combine the lows, combine the highs
+                    return new Amount(
+                        firstAmount.SizeLow + secondAmount.SizeLow,
+                        firstAmount.SizeHigh + secondAmount.SizeHigh,
+                        firstAmount.Unit);
+                }
+                
+                if (firstAmount.SizeLow.HasValue)
+                {
+                    //(1-2) + 1 = (2-3)
+                    return new Amount(
+                        firstAmount.SizeLow + secondAmount.SizeHigh,
+                        firstAmount.SizeHigh + secondAmount.SizeHigh,
+                        firstAmount.Unit);
+                }
+                
+                if (secondAmount.SizeLow.HasValue)
+                {
+                    //1 + (1-2) = (2-3)
+                    return new Amount(
+                        firstAmount.SizeHigh + secondAmount.SizeLow,
+                        firstAmount.SizeHigh + secondAmount.SizeHigh,
+                        firstAmount.Unit);
+                }
 
                 //just combine the highs
                 return new Amount(firstAmount.SizeHigh + secondAmount.SizeHigh, firstAmount.Unit);
@@ -137,23 +155,34 @@ namespace KitchenPC
 
         public Amount Round(int decimalPlaces)
         {
-            var ret = new Amount(this);
+            var roundedResult = new Amount(this)
+                             {
+                                 SizeLow =
+                                     this.SizeLow.HasValue
+                                         ? (float?)Math.Round(this.SizeLow.Value, decimalPlaces)
+                                         : null,
+                                 SizeHigh = (float)Math.Round(this.SizeHigh, decimalPlaces)
+                             };
 
-            ret.SizeLow = SizeLow.HasValue ? (float?)Math.Round(SizeLow.Value, decimalPlaces) : null;
-            ret.SizeHigh = (float)Math.Round(SizeHigh, decimalPlaces);
-
-            return ret;
+            return roundedResult;
         }
 
         public Amount RoundUp(Single nearestMultiple)
         {
-            var ret = new Amount(this);
-            ret.SizeLow = SizeLow.HasValue
-                              ? (float?)(Math.Ceiling(SizeLow.Value / nearestMultiple) * nearestMultiple)
-                              : null;
-            ret.SizeHigh = (float)Math.Ceiling(SizeHigh / nearestMultiple) * nearestMultiple;
+            var roundedUpResult = new Amount(this)
+                                      {
+                                          SizeLow =
+                                              this.SizeLow.HasValue
+                                                  ? (float?)
+                                                    (Math.Ceiling(this.SizeLow.Value / nearestMultiple)
+                                                     * nearestMultiple)
+                                                  : null,
+                                          SizeHigh =
+                                              (float)Math.Ceiling(this.SizeHigh / nearestMultiple)
+                                              * nearestMultiple
+                                      };
 
-            return ret;
+            return roundedUpResult;
         }
 
         public override string ToString()
@@ -170,25 +199,26 @@ namespace KitchenPC
             string sizeHigh;
             string sizeLow;
 
-            if (KitchenPC.Unit.GetConvType(Unit) == UnitType.Weight) //Render in decimal
+            if (KitchenPC.Unit.GetConvType(Unit) == UnitType.Weight) // Render in decimal
             {
                 sizeHigh = Math.Round(SizeHigh, 2).ToString();
                 sizeLow = SizeLow.HasValue ? Math.Round(SizeLow.Value, 2).ToString() : null;
             }
-            else //Render in fractions
+            else // Render in fractions
             {
                 sizeHigh = Fractions.FromDecimal((decimal)SizeHigh);
                 sizeLow = SizeLow.HasValue ? Fractions.FromDecimal((decimal)SizeLow.Value) : null;
             }
 
-            var amt = (sizeLow != null) ? String.Format("{0} - {1}", sizeLow, sizeHigh) : sizeHigh;
-            return String.Format("{0} {1}", amt, unit).Trim();
+            var amount = (sizeLow != null) ? String.Format("{0} - {1}", sizeLow, sizeHigh) : sizeHigh;
+            return String.Format("{0} {1}", amount, unit).Trim();
         }
 
         public bool Equals(Amount other)
         {
-            if (other is Amount) //Check for null
+            if (other is Amount)
             {
+                //Check for null
                 return (other.SizeLow == SizeLow && other.SizeHigh == SizeHigh && other.Unit == Unit);
             }
 
@@ -197,9 +227,10 @@ namespace KitchenPC
 
         public override bool Equals(object obj)
         {
-            if (obj is Amount)
+            var other = obj as Amount;
+            if (other != null)
             {
-                return this.Equals((Amount)obj);
+                return this.Equals(other);
             }
 
             return false;
@@ -222,7 +253,7 @@ namespace KitchenPC
                 return !x.Equals(y);
             }
 
-            return (y is Amount);
+            return y is Amount;
         }
 
         public override int GetHashCode()

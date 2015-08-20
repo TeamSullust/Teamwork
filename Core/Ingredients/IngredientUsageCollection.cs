@@ -2,7 +2,7 @@
 
 namespace KitchenPC.Ingredients
 {
-   public class IngredientUsageCollection : List<IngredientUsage>
-   {
-   }
+    public class IngredientUsageCollection : List<IngredientUsage>
+    {
+    }
 }

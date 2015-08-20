@@ -4,10 +4,10 @@ namespace KitchenPC.Menus
 {
     public class MenuResult
     {
-        public bool IsMenuCreated;
+        public bool IsMenuCreated { get; set; }
 
-        public bool IsMenuUpdated;
+        public bool IsMenuUpdated { get; set; }
 
-        public Guid? NewMenuId;
+        public Guid? NewMenuId { get; set; }
     }
 }

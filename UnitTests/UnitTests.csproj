@@ -148,6 +148,7 @@
     <Compile Include="UnitConverter.cs" />
     <Compile Include="Units.cs" />
     <Compile Include="Modeler.cs" />
+    <Compile Include="WeightTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Core\Core.csproj">

@@ -4,57 +4,58 @@ using KitchenPC.Recipes;
 
 namespace KitchenPC.Ingredients
 {
-   public class IngredientSection
-   {
-      public string SectionName { get; private set; }
-      public IngredientUsageCollection Ingredients { get; private set; }
+    public class IngredientSection
+    {
+        public string SectionName { get; private set; }
 
-      IngredientSection(string name)
-      {
-         SectionName = name;
-         Ingredients = new IngredientUsageCollection();
-      }
+        public IngredientUsageCollection Ingredients { get; private set; }
 
-      public static IngredientSection[] GetSections(Recipe recipe)
-      {
-         //TODO: This code can probably be done in a LINQ expression, or more efficiently.
+        private IngredientSection(string name)
+        {
+            SectionName = name;
+            Ingredients = new IngredientUsageCollection();
+        }
 
-         var nullSection = new IngredientSection(null);
-         var map = new Dictionary<string, IngredientSection>();
+        public static IngredientSection[] GetSections(Recipe recipe)
+        {
+            //TODO: This code can probably be done in a LINQ expression, or more efficiently.
 
-         foreach (var usage in recipe.Ingredients)
-         {
-            if (String.IsNullOrEmpty(usage.Section))
+            var nullSection = new IngredientSection(null);
+            var map = new Dictionary<string, IngredientSection>();
+            
+            foreach (var usage in recipe.Ingredients)
             {
-               nullSection.Ingredients.Add(usage);
+                if (string.IsNullOrEmpty(usage.Section))
+                {
+                    nullSection.Ingredients.Add(usage);
+                }
+                else
+                {
+                    var sectionKey = usage.Section.ToLower();
+
+                    IngredientSection sectionList;
+                    if (map.TryGetValue(sectionKey, out sectionList))
+                    {
+                        sectionList.Ingredients.Add(usage);
+                    }
+                    else
+                    {
+                        sectionList = new IngredientSection(usage.Section);
+                        sectionList.Ingredients.Add(usage);
+                        map.Add(sectionKey, sectionList);
+                    }
+                }
             }
-            else
+
+            var result = new List<IngredientSection>();
+            if (nullSection.Ingredients.Count > 0)
             {
-               var sectionKey = usage.Section.ToLower();
-
-               IngredientSection sectionList;
-               if (map.TryGetValue(sectionKey, out sectionList))
-               {
-                  sectionList.Ingredients.Add(usage);
-               }
-               else
-               {
-                  sectionList = new IngredientSection(usage.Section);
-                  sectionList.Ingredients.Add(usage);
-                  map.Add(sectionKey, sectionList);
-               }
+                result.Add(nullSection);
             }
-         }
 
-         var ret = new List<IngredientSection>();
-         if (nullSection.Ingredients.Count > 0)
-         {
-            ret.Add(nullSection);
-         }
+            result.AddRange(map.Values);
 
-         ret.AddRange(map.Values);
-
-         return ret.ToArray();
-      }
-   }
+            return result.ToArray();
+        }
+    }
 }
