@@ -1,9 +1,7 @@
 ﻿namespace KitchenPC.UnitTests
 {
     using System.Diagnostics;
-
-    using KitchenPC.NLP;
-
+    using NLP;
     using NUnit.Framework;
 
     [TestFixture]
@@ -24,10 +22,10 @@
             NumericVocab.InitIndex();
 
             // Load parse templates
-            this.parser = new Parser();
+            parser = new Parser();
             Trace.Write("Loading parse templates... ");
 
-            this.parser.LoadTemplates(
+            parser.LoadTemplates(
                 "[ING]: [AMT] [UNIT]",
 
                 // cheddar cheese: 5 cups
@@ -83,10 +81,24 @@
         }
 
         [Test]
-        public void TestNLP()
+        public void TestNLP_Parser_FivePieceInputNoColon_ShouldBeParsedCorrectly()
+        {
+            // parser.Parse("1 cup melted cheddar cheese");
+            var result = parser.Parse("1 cup melted cheddar cheese");
+
+            Assert.AreEqual(MatchResult.Match, result.Status);
+            Assert.AreEqual(TestIngredientLoader.ING_CHEESE, result.Usage.Ingredient.Id);
+            Assert.AreEqual(TestIngredientLoader.FORM_CHEESE_MELTED, result.Usage.Form.FormId);
+            Assert.AreEqual(1.0f, result.Usage.Amount.SizeHigh);
+            Assert.AreEqual(Units.Cup, result.Usage.Amount.Unit);
+            Assert.IsNull(result.Usage.PrepNote);
+        }
+
+        [Test]
+        public void TestNLP_Parser_FivePieceInputWithColon_ShouldBeParsedCorrectly()
         {
             // parser.Parse("shredded cheddar cheese: 5 cups");
-            var result = this.parser.Parse("shredded cheddar cheese: 5 cups");
+            var result = parser.Parse("shredded cheddar cheese: 5 cups");
 
             Assert.AreEqual(MatchResult.Match, result.Status);
             Assert.AreEqual(TestIngredientLoader.ING_CHEESE, result.Usage.Ingredient.Id);
@@ -94,95 +106,131 @@
             Assert.AreEqual(5.0f, result.Usage.Amount.SizeHigh);
             Assert.AreEqual(Units.Cup, result.Usage.Amount.Unit);
             Assert.IsNull(result.Usage.PrepNote);
+        }
 
-            // parser.Parse("1 cup melted cheddar cheese");
-            result = this.parser.Parse("1 cup melted cheddar cheese");
-            Assert.AreEqual(MatchResult.Match, result.Status);
-            Assert.AreEqual(TestIngredientLoader.ING_CHEESE, result.Usage.Ingredient.Id);
-            Assert.AreEqual(TestIngredientLoader.FORM_CHEESE_MELTED, result.Usage.Form.FormId);
-            Assert.AreEqual(1.0f, result.Usage.Amount.SizeHigh);
-            Assert.AreEqual(Units.Cup, result.Usage.Amount.Unit);
-            Assert.IsNull(result.Usage.PrepNote);
-
-            // parser.Parse("5 1/2 cups flour");
-            result = this.parser.Parse("5 1/2 cups flour");
-            Assert.AreEqual(MatchResult.Match, result.Status);
-            Assert.AreEqual(TestIngredientLoader.ING_FLOUR, result.Usage.Ingredient.Id);
-            Assert.AreEqual(TestIngredientLoader.FORM_FLOUR_VOLUME, result.Usage.Form.FormId);
-            Assert.AreEqual(5.5f, result.Usage.Amount.SizeHigh);
-            Assert.AreEqual(Units.Cup, result.Usage.Amount.Unit);
-            Assert.IsNull(result.Usage.PrepNote);
-
+        [Test]
+        public void TestNLP_Parser_FivePieceInputWithFraction_ShouldBeParsedCorrectly()
+        {
             // parser.Parse("1 1/2 tsp of milk");
-            result = this.parser.Parse("1 1/2 tsp of milk");
+            var result = parser.Parse("1 1/2 tsp of milk");
+
             Assert.AreEqual(MatchResult.Match, result.Status);
             Assert.AreEqual(TestIngredientLoader.ING_MILK, result.Usage.Ingredient.Id);
             Assert.AreEqual(TestIngredientLoader.FORM_MILK_VOLUME, result.Usage.Form.FormId);
             Assert.AreEqual(1.5f, result.Usage.Amount.SizeHigh);
             Assert.AreEqual(Units.Teaspoon, result.Usage.Amount.Unit);
             Assert.IsNull(result.Usage.PrepNote);
+        }
 
-            // parser.Parse("six eggs");
-            result = this.parser.Parse("six eggs");
-            Assert.AreEqual(MatchResult.Match, result.Status);
-            Assert.AreEqual(TestIngredientLoader.ING_EGGS, result.Usage.Ingredient.Id);
-            Assert.AreEqual(TestIngredientLoader.FORM_EGG_UNIT, result.Usage.Form.FormId);
-            Assert.AreEqual(6.0f, result.Usage.Amount.SizeHigh);
-            Assert.AreEqual(Units.Unit, result.Usage.Amount.Unit);
-            Assert.IsNull(result.Usage.PrepNote);
-
-            // parser.Parse("an egg");
-            result = this.parser.Parse("an egg");
-            Assert.AreEqual(MatchResult.Match, result.Status);
-            Assert.AreEqual(TestIngredientLoader.ING_EGGS, result.Usage.Ingredient.Id);
-            Assert.AreEqual(TestIngredientLoader.FORM_EGG_UNIT, result.Usage.Form.FormId);
-            Assert.AreEqual(1.0f, result.Usage.Amount.SizeHigh);
-            Assert.AreEqual(Units.Unit, result.Usage.Amount.Unit);
-            Assert.IsNull(result.Usage.PrepNote);
-
-            // parser.Parse("a dozen ripe bananas");
-            result = this.parser.Parse("a dozen ripe bananas");
-            Assert.AreEqual(MatchResult.Match, result.Status);
-            Assert.AreEqual(TestIngredientLoader.ING_BANANAS, result.Usage.Ingredient.Id);
-            Assert.AreEqual(TestIngredientLoader.FORM_BANANA_UNIT, result.Usage.Form.FormId);
-            Assert.AreEqual(12.0f, result.Usage.Amount.SizeHigh);
-            Assert.AreEqual(Units.Unit, result.Usage.Amount.Unit);
-            Assert.AreEqual("ripe", result.Usage.PrepNote);
-
-            // parser.Parse("eggs: 3");
-            result = this.parser.Parse("eggs: 3");
-            Assert.AreEqual(MatchResult.Match, result.Status);
-            Assert.AreEqual(TestIngredientLoader.ING_EGGS, result.Usage.Ingredient.Id);
-            Assert.AreEqual(TestIngredientLoader.FORM_EGG_UNIT, result.Usage.Form.FormId);
-            Assert.AreEqual(3.0f, result.Usage.Amount.SizeHigh);
-            Assert.AreEqual(Units.Unit, result.Usage.Amount.Unit);
-            Assert.IsNull(result.Usage.PrepNote);
-
-            // parser.Parse("1 head of lettuce");
-            result = this.parser.Parse("1 head of lettuce");
-            Assert.AreEqual(MatchResult.Match, result.Status);
-            Assert.AreEqual(TestIngredientLoader.ING_LETTUCE, result.Usage.Ingredient.Id);
-            Assert.AreEqual(TestIngredientLoader.FORM_LETTUCE_HEAD, result.Usage.Form.FormId);
-            Assert.AreEqual(1.0f, result.Usage.Amount.SizeHigh);
-            Assert.AreEqual(Units.Unit, result.Usage.Amount.Unit);
-            Assert.IsNull(result.Usage.PrepNote);
-
+        [Test]
+        public void TestNLP_Parser_FivePieceInputWithPrepNotes_ShouldBeParsedCorrectly()
+        {
             // Test a few prep notes
-            result = this.parser.Parse("1 head of lettuce, chopped");
+            var result = parser.Parse("1 head of lettuce, chopped");
+
             Assert.AreEqual(MatchResult.Match, result.Status);
             Assert.AreEqual(TestIngredientLoader.ING_LETTUCE, result.Usage.Ingredient.Id);
             Assert.AreEqual(TestIngredientLoader.FORM_LETTUCE_HEAD, result.Usage.Form.FormId);
             Assert.AreEqual(1.0f, result.Usage.Amount.SizeHigh);
             Assert.AreEqual(Units.Unit, result.Usage.Amount.Unit);
             Assert.AreEqual("chopped", result.Usage.PrepNote);
+        }
 
-            result = this.parser.Parse("1 ripe banana, sliced");
+        [Test]
+        public void TestNLP_Parser_FourPieceInputWithFraction_ShouldBeParsedCorrectly()
+        {
+            // parser.Parse("5 1/2 cups flour");
+            var result = parser.Parse("5 1/2 cups flour");
+
+            Assert.AreEqual(MatchResult.Match, result.Status);
+            Assert.AreEqual(TestIngredientLoader.ING_FLOUR, result.Usage.Ingredient.Id);
+            Assert.AreEqual(TestIngredientLoader.FORM_FLOUR_VOLUME, result.Usage.Form.FormId);
+            Assert.AreEqual(5.5f, result.Usage.Amount.SizeHigh);
+            Assert.AreEqual(Units.Cup, result.Usage.Amount.Unit);
+            Assert.IsNull(result.Usage.PrepNote);
+        }
+
+        [Test]
+        public void TestNLP_Parser_FourPieceInputWithNormalNumber_ShouldBeParsedCorrectly()
+        {
+            // parser.Parse("1 head of lettuce");
+            var result = parser.Parse("1 head of lettuce");
+
+            Assert.AreEqual(MatchResult.Match, result.Status);
+            Assert.AreEqual(TestIngredientLoader.ING_LETTUCE, result.Usage.Ingredient.Id);
+            Assert.AreEqual(TestIngredientLoader.FORM_LETTUCE_HEAD, result.Usage.Form.FormId);
+            Assert.AreEqual(1.0f, result.Usage.Amount.SizeHigh);
+            Assert.AreEqual(Units.Unit, result.Usage.Amount.Unit);
+            Assert.IsNull(result.Usage.PrepNote);
+        }
+
+        [Test]
+        public void TestNLP_Parser_FourPieceInputWithPrepNotes_ShouldBeParsedCorrectly()
+        {
+            var result = parser.Parse("1 ripe banana, sliced");
+
             Assert.AreEqual(MatchResult.Match, result.Status);
             Assert.AreEqual(TestIngredientLoader.ING_BANANAS, result.Usage.Ingredient.Id);
             Assert.AreEqual(TestIngredientLoader.FORM_BANANA_UNIT, result.Usage.Form.FormId);
             Assert.AreEqual(1.0f, result.Usage.Amount.SizeHigh);
             Assert.AreEqual(Units.Unit, result.Usage.Amount.Unit);
             Assert.AreEqual("ripe//sliced", result.Usage.PrepNote);
+        }
+
+        [Test]
+        public void TestNLP_Parser_FourPieceInputWithTheWordDozen_ShouldBeParsedCorrectly()
+        {
+            // parser.Parse("a dozen ripe bananas");
+            var result = parser.Parse("a dozen ripe bananas");
+
+            Assert.AreEqual(MatchResult.Match, result.Status);
+            Assert.AreEqual(TestIngredientLoader.ING_BANANAS, result.Usage.Ingredient.Id);
+            Assert.AreEqual(TestIngredientLoader.FORM_BANANA_UNIT, result.Usage.Form.FormId);
+            Assert.AreEqual(12.0f, result.Usage.Amount.SizeHigh);
+            Assert.AreEqual(Units.Unit, result.Usage.Amount.Unit);
+            Assert.AreEqual("ripe", result.Usage.PrepNote);
+        }
+
+        [Test]
+        public void TestNLP_Parser_TwoPieceInputWithAnInsteadOfOne_ShouldBeParsedCorrectly()
+        {
+            // parser.Parse("an egg");
+            var result = parser.Parse("an egg");
+
+            Assert.AreEqual(MatchResult.Match, result.Status);
+            Assert.AreEqual(TestIngredientLoader.ING_EGGS, result.Usage.Ingredient.Id);
+            Assert.AreEqual(TestIngredientLoader.FORM_EGG_UNIT, result.Usage.Form.FormId);
+            Assert.AreEqual(1.0f, result.Usage.Amount.SizeHigh);
+            Assert.AreEqual(Units.Unit, result.Usage.Amount.Unit);
+            Assert.IsNull(result.Usage.PrepNote);
+        }
+
+        [Test]
+        public void TestNLP_Parser_TwoPieceInputWithColon_ShouldBeParsedCorrectly()
+        {
+            // parser.Parse("eggs: 3");
+            var result = parser.Parse("eggs: 3");
+
+            Assert.AreEqual(MatchResult.Match, result.Status);
+            Assert.AreEqual(TestIngredientLoader.ING_EGGS, result.Usage.Ingredient.Id);
+            Assert.AreEqual(TestIngredientLoader.FORM_EGG_UNIT, result.Usage.Form.FormId);
+            Assert.AreEqual(3.0f, result.Usage.Amount.SizeHigh);
+            Assert.AreEqual(Units.Unit, result.Usage.Amount.Unit);
+            Assert.IsNull(result.Usage.PrepNote);
+        }
+
+        [Test]
+        public void TestNLP_Parser_TwoPieceInputWithNormalNumberAsAWord_ShouldBeParsedCorrectly()
+        {
+            // parser.Parse("six eggs");
+            var result = parser.Parse("six eggs");
+
+            Assert.AreEqual(MatchResult.Match, result.Status);
+            Assert.AreEqual(TestIngredientLoader.ING_EGGS, result.Usage.Ingredient.Id);
+            Assert.AreEqual(TestIngredientLoader.FORM_EGG_UNIT, result.Usage.Form.FormId);
+            Assert.AreEqual(6.0f, result.Usage.Amount.SizeHigh);
+            Assert.AreEqual(Units.Unit, result.Usage.Amount.Unit);
+            Assert.IsNull(result.Usage.PrepNote);
         }
     }
 }
