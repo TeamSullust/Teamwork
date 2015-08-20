@@ -1,16 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace KitchenPC.UnitTests
+﻿namespace KitchenPC.UnitTests
 {
     using NUnit.Core;
     using NUnit.Framework;
 
     [TestFixture]
-    class WeightTests
+    public class WeightTests
     {
         private static Weight testWeight;
         

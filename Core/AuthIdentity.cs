@@ -56,23 +56,23 @@ namespace KitchenPC
 
         public static Byte[] Serialize(AuthIdentity identity)
         {
-            var g = identity.UserId.ToByteArray();
-            var u = Encoding.UTF8.GetBytes(identity.Name);
+            var userId = identity.UserId.ToByteArray();
+            var name = Encoding.UTF8.GetBytes(identity.Name);
 
-            return g.Concat(u).ToArray();
+            return userId.Concat(name).ToArray();
         }
 
         public static AuthIdentity Deserialize(Byte[] bytes)
         {
             if (bytes.Length < 17) throw new ArgumentException("AuthIdentity must be at least 17 bytes.");
 
-            var g = new byte[16];
-            var u = new byte[bytes.Length - 16];
+            var userId = new byte[16];
+            var name = new byte[bytes.Length - 16];
 
-            Buffer.BlockCopy(bytes, 0, g, 0, 16);
-            Buffer.BlockCopy(bytes, 16, u, 0, u.Length);
+            Buffer.BlockCopy(bytes, 0, userId, 0, 16);
+            Buffer.BlockCopy(bytes, 16, name, 0, name.Length);
 
-            return new AuthIdentity(new Guid(g), Encoding.UTF8.GetString(u));
+            return new AuthIdentity(new Guid(userId), Encoding.UTF8.GetString(name));
         }
     }
 }
